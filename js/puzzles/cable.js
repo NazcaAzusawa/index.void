@@ -1,6 +1,6 @@
 export function render(config, gameStateRef) {
-    // config.jsで variant: "monitor" が指定されているため、これで判定
-    if (config.variant === "monitor") {
+    // ジャイロと同じく、config.type で判断します
+    if (config.type === "monitor") {
       const isPowered = gameStateRef && gameStateRef.isCablePowered;
       const statusClass = isPowered ? "monitor-on" : "monitor-off";
       const text = isPowered ? "SYSTEM ONLINE<br>CABLE LINKED" : "NO SIGNAL";
@@ -12,7 +12,7 @@ export function render(config, gameStateRef) {
       `;
     }
   
-    // それ以外（ケーブルソケット）
+    // それ以外（type: "cable_socket" など）
     const wireList = config.wires || ["empty", "empty", "empty"];
     const wiresHTML = wireList.map((wire) => {
       if (wire === "empty") return '<div class="wire"></div>';
@@ -22,6 +22,6 @@ export function render(config, gameStateRef) {
     return `<div class="cable-socket">${wiresHTML.join("")}</div>`;
   }
   
-  export function handleAction() {
+  export function handleAction(action, config, tier, index, element, gameState, showModal, triggerMorseVibration) {
     return false;
   }
