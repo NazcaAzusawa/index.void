@@ -1,0 +1,30 @@
+/* --- RGBボタン関連 --- */
+
+/* Index 1: RGB Buttons (丸型) */
+.big-btn {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 6px solid #111;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8),
+    inset 0 5px 10px rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.05s;
+}
+.big-btn:active {
+  transform: scale(0.96);
+}
+
+.btn-red {
+  background: radial-gradient(circle, #ff4444 0%, #880000 100%);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+}
+.btn-green {
+  background: radial-gradient(circle, #44ff44 0%, #008800 100%);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+}
+.btn-blue {
+  background: radial-gradient(circle, #4444ff 0%, #000088 100%);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+}
