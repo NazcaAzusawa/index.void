@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>SYSTEM_ROOT</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="debug-panel">
+      IDX: <span id="d-top">0</span>/<span id="d-mid">0</span>/<span id="d-bot">0</span>
+    </div>
+
+    <div id="sys-modal">
+      <div class="sys-window">
+        <div class="sys-header" id="modal-title">SYSTEM</div>
+        <div class="sys-content" id="modal-body">...</div>
+        <button class="sys-close" onclick="closeModal()">CLOSE</button>
+      </div>
+    </div>
+
+    <div class="lane" id="lane-top" data-tier="top"></div>
+    <div class="lane" id="lane-mid" data-tier="mid"></div>
+    <div class="lane" id="lane-bot" data-tier="bot"></div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
+

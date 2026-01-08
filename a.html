@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>SYSTEM_ROOT</title>
+    <style>
+      /* --- 1. CORE STYLE (インダストリアル・ダーク) --- */
+      :root {
+        --bg-metal: #0a0a0a;
+        --plate-grad: linear-gradient(135deg, #222 0%, #151515 100%);
+        --accent-orange: #ff9900;
+        --accent-green: #33ff33;
+        --accent-red: #ff3333;
+        --text-dim: #888;
+        --screw-light: #444;
+        --screw-dark: #111;
+      }
+
+      body {
+        margin: 0;
+        background: #000;
+        color: #ccc;
+        font-family: "Segoe UI", "Courier New", monospace;
+        overflow: hidden; /* スクロール禁止 */
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: pan-x; /* 横スクロールのみ許可、拡大縮小禁止 */
+      }
+
+      /* --- 2. LAYOUT (3段ラック) --- */
+      .lane {
+        flex: 1;
+        display: flex;
+        overflow-x: scroll;
+        scroll-snap-type: x mandatory;
+        border-bottom: 4px solid #000;
+        background: var(--bg-metal);
+        scrollbar-width: none; /* Firefox */
+      }
+      .lane::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+      }
+
+      /* --- 3. MODULE DESIGN (金属プレート) --- */
+      .module {
+        flex: 0 0 100vw;
+        height: 100%;
+        scroll-snap-align: center;
+        padding: 6px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .plate {
+        width: 100%;
+        height: 100%;
+        background: var(--plate-grad);
+        border-top: 1px solid #333;
+        border-left: 1px solid #333;
+        border-bottom: 3px solid #000;
+        border-right: 3px solid #000;
+        border-radius: 4px;
+        position: relative;
+        box-shadow: inset 0 0 30px #000;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 装飾：ネジ */
+      .screw {
+        width: 14px;
+        height: 14px;
+        background: radial-gradient(
+          circle,
+          var(--screw-light) 10%,
+          var(--screw-dark) 90%
+        );
+        border-radius: 50%;
+        position: absolute;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+      }
+      .screw::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 6px;
+        width: 2px;
+        height: 8px;
+        background: #000;
+        transform: rotate(45deg);
+      }
+      .screw::before {
+        content: "";
+        position: absolute;
+        top: 6px;
+        left: 3px;
+        width: 8px;
+        height: 2px;
+        background: #000;
+        transform: rotate(45deg);
+      }
+
+      .tl {
+        top: 10px;
+        left: 10px;
+      }
+      .tr {
+        top: 10px;
+        right: 10px;
+        transform: rotate(90deg);
+      }
+      .bl {
+        bottom: 10px;
+        left: 10px;
+      }
+      .br {
+        bottom: 10px;
+        right: 10px;
+        transform: rotate(45deg);
+      }
+
+      /* ラベル（右下の型番） */
+      .label-plate {
+        position: absolute;
+        bottom: 12px;
+        right: 15px;
+        font-family: "Courier New", monospace;
+        font-size: 10px;
+        color: var(--text-dim);
+        border: 1px solid #222;
+        padding: 2px 6px;
+        opacity: 0.6;
+      }
+
+      /* コンテンツ格納エリア */
+      .module-content {
+        width: 80%;
+        height: 70%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* --- 4. GIMMICK UI PARTS --- */
+
+      /* Index 0: Meta Buttons (システムキー) */
+      .meta-btn {
+        width: 160px;
+        height: 60px;
+        background: linear-gradient(to bottom, #333, #111);
+        border: 2px solid #555;
+        border-radius: 4px;
+        color: var(--accent-orange);
+        font-family: monospace;
+        font-size: 18px;
+        letter-spacing: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 0 #000;
+        cursor: pointer;
+        text-shadow: 0 0 5px var(--accent-orange);
+      }
+      .meta-btn:active {
+        transform: translateY(4px);
+        box-shadow: 0 0 0 #000;
+      }
+
+      /* Index 1: RGB Buttons (丸型) */
+      .big-btn {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 6px solid #111;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8),
+          inset 0 5px 10px rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        position: relative;
+        transition: transform 0.05s;
+      }
+      .big-btn:active {
+        transform: scale(0.96);
+      }
+
+      .btn-red {
+        background: radial-gradient(circle, #ff4444 0%, #880000 100%);
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+      }
+      .btn-green {
+        background: radial-gradient(circle, #44ff44 0%, #008800 100%);
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+      }
+      .btn-blue {
+        background: radial-gradient(circle, #4444ff 0%, #000088 100%);
+        box-shadow: 0 0 20px rgba(0, 0, 255, 0.4);
+      }
+
+      /* Index 2: Text Box Module (MIMIC) */
+      .screen-frame {
+        width: 200px;
+        padding: 10px;
+        background: #000;
+        border: 4px solid #333;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        box-shadow: inset 0 0 10px #222;
+      }
+      .retro-input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--accent-green);
+        font-family: monospace;
+        font-size: 24px;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+      }
+      .send-btn {
+        width: 80px;
+        height: 40px;
+        background: #222;
+        color: #888;
+        border: 1px solid #444;
+        font-family: monospace;
+        cursor: pointer;
+      }
+      .send-btn:active {
+        background: #333;
+        color: #fff;
+      }
+
+      /* --- 5. MODAL WINDOW (システムウィンドウ) --- */
+      #sys-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+        backdrop-filter: blur(2px);
+      }
+      #sys-modal.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .sys-window {
+        width: 80%;
+        max-width: 400px;
+        background: #111;
+        border: 2px solid var(--accent-orange);
+        color: var(--accent-orange);
+        font-family: monospace;
+        padding: 20px;
+        box-shadow: 0 0 20px var(--accent-orange);
+        transform: scale(0.9);
+        transition: transform 0.2s;
+      }
+      #sys-modal.show .sys-window {
+        transform: scale(1);
+      }
+
+      .sys-header {
+        border-bottom: 1px solid var(--accent-orange);
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+      .sys-content {
+        min-height: 100px;
+        font-size: 14px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+      .sys-close {
+        margin-top: 20px;
+        width: 100%;
+        padding: 10px;
+        background: var(--accent-orange);
+        color: #000;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      /* デバッグ用 (右上の小さいやつ) */
+      #debug-panel {
+        position: fixed;
+        top: 5px;
+        right: 5px;
+        color: #0f0;
+        font-size: 10px;
+        z-index: 9000;
+        pointer-events: none;
+        opacity: 0.5;
+      }
+
+      /* --- 追加モジュール用スタイル --- */
+
+      /* 1. Parasite (クリップボード) */
+      .clipboard-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+      }
+      .clip-btn {
+        background: #333;
+        color: #fff;
+        border: 1px solid #555;
+        padding: 10px 20px;
+        font-family: monospace;
+        cursor: pointer;
+      }
+      .clip-btn:active {
+        background: #555;
+      }
+
+      /* --- GYRO MODULES --- */
+
+      /* Bot-19: 暗号テキスト (デカデカと) */
+      .cipher-panel {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+      }
+      .cipher-text {
+        color: #ff3333; /* 警告色 */
+        font-family: "Courier New", monospace;
+        font-size: 28px; /* デカく */
+        font-weight: bold;
+        letter-spacing: 4px;
+        text-align: center;
+        line-height: 1.5;
+        text-shadow: 4px 4px 0px #300; /* 立体感 */
+      }
+
+      /* Bot-18: 生データ (数値のみ) */
+      .raw-data-panel {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Courier New", monospace;
+        background: #050505;
+      }
+      .raw-val {
+        color: #555; /* 目立たない色 */
+        font-size: 40px;
+        font-weight: bold;
+        letter-spacing: -2px;
+      }
+      /* クリア時の色 */
+      .raw-val.synced {
+        color: #3f3;
+        text-shadow: 0 0 20px #3f3;
+      }
+
+      /* 3. Cable & Monitor (配線とモニター) */
+      /* ケーブルの断面 */
+      .cable-socket {
+        width: 60px;
+        height: 100%;
+        background: #222;
+        border-left: 2px solid #555;
+        border-right: 2px solid #555;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+      }
+      .wire {
+        height: 10px;
+        width: 100%;
+        background: #555;
+      }
+      .wire.red {
+        background: #d00;
+      }
+      .wire.blue {
+        background: #00d;
+      }
+      .wire.yellow {
+        background: #da0;
+      }
+
+      /* モニター (Mid-13用) */
+      .monitor-off {
+        width: 100%;
+        height: 100%;
+        background: #050505;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #111;
+        font-family: monospace;
+        text-shadow: none;
+      }
+      .monitor-on {
+        background: #000;
+        color: #3f3;
+        text-shadow: 0 0 10px #3f3;
+        animation: flicker 0.1s infinite;
+      }
+      @keyframes flicker {
+        0% {
+          opacity: 0.9;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="debug-panel">
+      IDX: <span id="d-top">0</span>/<span id="d-mid">0</span>/<span id="d-bot"
+        >0</span
+      >
+    </div>
+
+    <div id="sys-modal">
+      <div class="sys-window">
+        <div class="sys-header" id="modal-title">SYSTEM</div>
+        <div class="sys-content" id="modal-body">...</div>
+        <button class="sys-close" onclick="closeModal()">CLOSE</button>
+      </div>
+    </div>
+
+    <div class="lane" id="lane-top" data-tier="top"></div>
+    <div class="lane" id="lane-mid" data-tier="mid"></div>
+    <div class="lane" id="lane-bot" data-tier="bot"></div>
+
+    <script>
+      // --- CONFIG ---
+      const MODULE_COUNT = 20; // 1レーンあたりのモジュール数
+
+      // --- STATE MANAGEMENT (脳) ---
+      const gameState = {
+        activeIndices: { top: 0, mid: 0, bot: 0 },
+        mimicAttempt: 0, // MIMICパズルの失敗回数カウント
+        isMimicCleared: false,
+        horizonTimer: 0, // ジャイロの静止時間計測用
+        isCablePowered: false, // ケーブルが繋がったかどうかのフラグ
+      };
+
+      // --- 1. MODULE CONTENT GENERATOR (中身の工場) ---
+      function getModuleContent(tier, index) {
+        // -------------------------------------------------
+        // INDEX 0: META BUTTONS (システムメニュー)
+        // -------------------------------------------------
+        if (index === 0) {
+          let label = "UNKNOWN";
+          let action = "";
+
+          if (tier === "top") {
+            label = "HELP";
+            action = "openHelp";
+          }
+          if (tier === "mid") {
+            label = "RECORDS";
+            action = "openRecords";
+          }
+          if (tier === "bot") {
+            label = "OPTIONS";
+            action = "openOptions";
+          }
+
+          return `<div class="meta-btn" data-action="${action}">${label}</div>`;
+        }
+
+        // -------------------------------------------------
+        // INDEX 1: RGB BUTTONS (物理ボタン)
+        // -------------------------------------------------
+        if (index === 1) {
+          let colorClass = "";
+          if (tier === "top") colorClass = "btn-red";
+          if (tier === "mid") colorClass = "btn-green";
+          if (tier === "bot") colorClass = "btn-blue";
+
+          return `<div class="big-btn ${colorClass}" data-action="clickRgb"></div>`;
+        }
+
+        // -------------------------------------------------
+        // INDEX 2 (TOP): MIMIC PUZZLE (振動モジュール)
+        // -------------------------------------------------
+        if (index === 2 && tier === "top") {
+          // 既にクリアしていたら "CLEARED" 表示にする
+          if (gameState.isMimicCleared) {
+            return `<div style="color:#3f3; font-weight:bold; font-size:24px;">ACCESS GRANTED</div>`;
+          }
+          return `
+        <div class="screen-frame">
+          <input type="text" class="retro-input" placeholder="_____" maxlength="5"
+            oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '')">
+        </div>
+        <button class="send-btn" data-action="submitMimic">SEND</button>
+      `;
+        }
+
+        // -------------------------------------------------
+        // 1. PARASITE (クリップボード) -> Mid Index 10 (例として配置)
+        // -------------------------------------------------
+        // ※今回は「中段」に置く想定ですが、場所は自由に変えてください
+        if (tier === "mid" && index === 10) {
+          return `
+        <div class="clipboard-panel">
+          <div style="font-size:10px; color:#888;">DATA PARASITE</div>
+          <button class="clip-btn" data-action="copyTrap">COPY_INFECT</button>
+          <button class="clip-btn" data-action="pasteCheck">PASTE_CURE</button>
+          <div id="paste-result" style="height:20px; color:#f00; font-size:12px;"></div>
+        </div>
+      `;
+        }
+
+        // -------------------------------------------------
+        // Bot-18: RAW BETA VALUE (数値のみ・単位なし)
+        // -------------------------------------------------
+        if (tier === "bot" && index === 18) {
+          // data-action は削除 (自動起動するため)
+          return `
+        <div class="raw-data-panel">
+          <span id="beta-val" class="raw-val">--.-</span>
+        </div>
+      `;
+        }
+
+        // -------------------------------------------------
+        // Bot-19: CIPHER TEXT (暗号)
+        // -------------------------------------------------
+        if (tier === "bot" && index === 19) {
+          return `
+        <div class="cipher-panel">
+          <div class="cipher-text">ESOY 6D<br>SY NRYS<br>246/-</div>
+        </div>
+      `;
+        }
+
+        // -------------------------------------------------
+        // 3. CABLE PATCH (ケーブル断面) -> T:3, M:8, B:15
+        // -------------------------------------------------
+        // 上段 (Top-3)
+        if (tier === "top" && index === 3) {
+          return `<div class="cable-socket"><div class="wire red"></div><div class="wire"></div><div class="wire blue"></div></div>`;
+        }
+        // 中段 (Mid-8)
+        if (tier === "mid" && index === 8) {
+          return `<div class="cable-socket"><div class="wire"></div><div class="wire red"></div><div class="wire yellow"></div></div>`;
+        }
+        // 下段 (Bot-15)
+        if (tier === "bot" && index === 15) {
+          return `<div class="cable-socket"><div class="wire blue"></div><div class="wire yellow"></div><div class="wire"></div></div>`;
+        }
+
+        // -------------------------------------------------
+        // 3. MONITOR (監視モニター) -> Mid Index 13
+        // -------------------------------------------------
+        if (tier === "mid" && index === 13) {
+          // ケーブルが繋がっていればON、そうでなければOFF
+          const statusClass = gameState.isCablePowered
+            ? "monitor-on"
+            : "monitor-off";
+          const text = gameState.isCablePowered
+            ? "SYSTEM ONLINE<br>CABLE LINKED"
+            : "NO SIGNAL";
+          return `<div class="${statusClass}" id="cable-monitor">${text}</div>`;
+        }
+
+        // -------------------------------------------------
+        // OTHERS: DUMMY (空っぽ)
+        // -------------------------------------------------
+        return `<div style="opacity:0.2; font-weight:bold; font-size:40px;">${index}</div>`;
+      }
+
+      // --- 2. INFINITE LANE INITIALIZER (無限レーン構築) ---
+      function initLane(laneId, tierName) {
+        const lane = document.getElementById(laneId);
+
+        // HTML生成ヘルパー
+        const createModuleHTML = (index, isClone = false) => {
+          const displayIndex = isClone ? `CLONE` : index;
+          const content = getModuleContent(tierName, index);
+          // クローンと本体を区別しない共通の識別子を持たせる
+
+          const el = document.createElement("div");
+          el.className = "module";
+          el.dataset.index = index;
+          el.dataset.tier = tierName;
+
+          el.innerHTML = `
+        <div class="plate">
+          <div class="screw tl"></div><div class="screw tr"></div>
+          <div class="screw bl"></div><div class="screw br"></div>
+          <div class="module-content">${content}</div>
+          <div class="label-plate">${tierName.toUpperCase()}-${displayIndex}</div>
+        </div>
+      `;
+          return el;
+        };
+
+        // DOM構築
+        const modules = [];
+        for (let i = 0; i < MODULE_COUNT; i++) {
+          modules.push(createModuleHTML(i));
+        }
+        const cloneHead = createModuleHTML(MODULE_COUNT - 1, true);
+        const cloneTail = createModuleHTML(0, true);
+
+        lane.appendChild(cloneHead);
+        modules.forEach((m) => lane.appendChild(m));
+        lane.appendChild(cloneTail);
+
+        // 初期位置調整
+        setTimeout(() => {
+          const w = lane.querySelector(".module").offsetWidth;
+          lane.scrollLeft = w;
+        }, 10);
+
+        // 無限スクロール処理 (ワープ)
+        lane.addEventListener("scroll", () => {
+          const w = lane.querySelector(".module").offsetWidth;
+          const maxScroll = w * (MODULE_COUNT + 1);
+
+          // 遊びを持たせてガタつき防止（0以下になったらワープ）
+          if (lane.scrollLeft <= 1) {
+            lane.scrollLeft = w * MODULE_COUNT + 1;
+          } else if (lane.scrollLeft >= maxScroll - 1) {
+            lane.scrollLeft = w - 1;
+          }
+        });
+
+        // ★ イベント委譲 (Event Delegation)
+        // レーン全体でクリックを監視し、ボタンの種類に応じて処理を振り分ける
+        lane.addEventListener("click", (e) => {
+          // data-action属性を持っている要素を探す
+          const target = e.target.closest("[data-action]");
+          if (!target) return;
+
+          const action = target.dataset.action;
+          const moduleEl = target.closest(".module");
+          const tier = moduleEl.dataset.tier;
+          const index = parseInt(moduleEl.dataset.index);
+
+          handleInteraction(action, tier, index, target);
+        });
+      }
+
+      // --- 3. INTERACTION HANDLER (ロジックの中枢) ---
+      function handleInteraction(action, tier, index, element) {
+        console.log(`Action: ${action} / Tier: ${tier}`);
+
+        // A. Meta Buttons (モーダル表示)
+        if (action === "openHelp")
+          showModal(
+            "HELP",
+            "This is not a game.\nDo not touch anything.\n\n...unless you have to."
+          );
+        if (action === "openRecords")
+          showModal(
+            "RECORDS",
+            "No Data Found.\n\n[LOCKED] - 0/10\n[LOCKED] - 0/5"
+          );
+        if (action === "openOptions")
+          showModal("OPTIONS", "Audio: ON\nVibration: ON\nReality: UNSTABLE");
+
+        // B. RGB Buttons
+        if (action === "clickRgb") {
+          // 視覚的フィードバック（一瞬白く光るなど）をCSSクラスで制御してもよい
+          console.log(`${tier} button clicked.`);
+        }
+
+        // C. MIMIC Puzzle (モールス信号)
+        if (action === "submitMimic") {
+          // 入力値を取得 (兄弟要素のinputを探す)
+          const input = element.parentElement.querySelector("input");
+          const val = input.value;
+
+          if (val === "MIMIC") {
+            // 正解処理
+            gameState.isMimicCleared = true;
+            showModal("SYSTEM", "ACCESS GRANTED.\n\nModule unlocked.");
+            // 入力欄を消して "ACCESS GRANTED" に書き換える（DOM直接操作）
+            // ※本当は再レンダリングがいいが、簡易的にinnerHTML書き換え
+            element.parentElement.innerHTML = `<div style="color:#3f3; font-weight:bold; font-size:24px;">ACCESS GRANTED</div>`;
+            navigator.vibrate([100, 50, 100]); // 成功バイブ
+          } else {
+            // 不正解処理 (バイブレーション)
+            triggerMorseVibration();
+            // 入力値を空にしてエラー演出
+            input.value = "";
+            input.placeholder = "ERROR";
+            setTimeout(() => (input.placeholder = "_____"), 1000);
+          }
+        }
+
+        if (action === "copyTrap") {
+          navigator.clipboard
+            .writeText("PAXXIXPAXX")
+            .then(() => {
+              // 成功したらボタンの文字を一瞬変えるなどの演出
+              const btn = element;
+              const originalText = btn.innerText;
+              btn.innerText = "COPIED";
+              btn.style.color = "#3f3";
+              setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.color = "";
+              }, 1000);
+            })
+            .catch((err) => console.error(err));
+        }
+        if (action === "pasteCheck") {
+          navigator.clipboard
+            .readText()
+            .then((text) => {
+              const resultEl =
+                element.parentElement.querySelector("#paste-result");
+              // 大文字小文字区別なしでPASSを含むか、あるいは完全一致か
+              if (text && text.trim() === "PASS") {
+                resultEl.style.color = "#3f3";
+                resultEl.innerText = "CURE COMPLETE";
+                // 実績解除処理など
+              } else {
+                resultEl.style.color = "#f00";
+                resultEl.innerText = "INVALID DATA";
+                triggerMorseVibration();
+              }
+            })
+            .catch((err) => {
+              const resultEl =
+                element.parentElement.querySelector("#paste-result");
+              resultEl.innerText = "READ ERROR";
+            });
+        }
+
+        // --- 2. HORIZON (ジャイロ開始トリガー) ---
+        if (action === "reqGyro") {
+          // iOS 13+ のための権限リクエスト
+          if (typeof DeviceOrientationEvent.requestPermission === "function") {
+            DeviceOrientationEvent.requestPermission()
+              .then((resp) => {
+                if (resp === "granted") startGyro();
+              })
+              .catch(console.error);
+          } else {
+            startGyro();
+          }
+        }
+      }
+
+      // --- 4. VIBRATION PUZZLE LOGIC (振動制御) ---
+      function triggerMorseVibration() {
+        // 振動非対応端末への対策
+        if (!navigator.vibrate) {
+          console.log("Vibration API not supported.");
+          return;
+        }
+
+        gameState.mimicAttempt++;
+
+        // ループ処理 (1〜5のサイクル)
+        // 1,3: M (--)
+        // 2,4: I (..)
+        // 5  : C (-.-.)
+        // 6以降: 1に戻る
+
+        // 現在のステップを計算 (1始まりのサイクルにするため調整)
+        let step = ((gameState.mimicAttempt - 1) % 5) + 1;
+
+        // モールスパターン (ms単位: 振動, 休止, 振動...)
+        // 短点(dot) = 100ms, 長点(dash) = 300ms, 間隔 = 100ms
+        let pattern = [];
+
+        if (step === 1 || step === 3) {
+          // M (--) : Dash, Dash
+          pattern = [300, 100, 300];
+          console.log("Vib: M (--)");
+        } else if (step === 2 || step === 4) {
+          // I (..) : Dot, Dot
+          pattern = [100, 100, 100];
+          console.log("Vib: I (..)");
+        } else if (step === 5) {
+          // C (-.-.) : Dash, Dot, Dash, Dot
+          pattern = [300, 100, 100, 100, 300, 100, 100];
+          console.log("Vib: C (-.-.)");
+        }
+
+        navigator.vibrate(pattern);
+      }
+
+      // --- 5. UI UTILITIES (モーダル制御など) ---
+      const modal = document.getElementById("sys-modal");
+      const mTitle = document.getElementById("modal-title");
+      const mBody = document.getElementById("modal-body");
+
+      function showModal(title, text) {
+        mTitle.innerText = title;
+        mBody.innerText = text;
+        modal.classList.add("show");
+      }
+
+      function closeModal() {
+        modal.classList.remove("show");
+      }
+
+      // --- 6. OBSERVER & INIT (起動) ---
+      // 初期化実行
+      initLane("lane-top", "top");
+      initLane("lane-mid", "mid");
+      initLane("lane-bot", "bot");
+
+      startGyro();
+
+      // インデックス監視
+      const debugEls = {
+        top: document.getElementById("d-top"),
+        mid: document.getElementById("d-mid"),
+        bot: document.getElementById("d-bot"),
+      };
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const tier = entry.target.dataset.tier;
+              const index = parseInt(entry.target.dataset.index);
+              gameState.activeIndices[tier] = index;
+              debugEls[tier].innerText = index;
+            }
+          });
+        },
+        { threshold: 0.6 }
+      );
+
+      // 少し待ってから監視開始（DOM生成待ち）
+      setTimeout(() => {
+        document
+          .querySelectorAll(".module")
+          .forEach((m) => observer.observe(m));
+      }, 500);
+
+      // トリプルタップ全画面
+      let tapCnt = 0,
+        lastTap = 0;
+      document.addEventListener("touchend", () => {
+        const now = new Date().getTime();
+        if (now - lastTap < 400) {
+          tapCnt++;
+          if (tapCnt >= 3) {
+            document.documentElement.requestFullscreen().catch(() => {});
+            tapCnt = 0;
+          }
+        } else tapCnt = 1;
+        lastTap = now;
+      });
+
+      let holdStartTime = 0;
+
+      function startGyro() {
+        // iOS 13+ 対策: 許可が必要な場合は、画面上の任意のクリック(Event Delegation)で
+        // こっそり requestPermission を呼ぶハックが必要ですが、
+        // ここではシンプルに「自動登録」を試みます。
+        // (AndroidやPC、古いiOSならこれで即動きます)
+
+        window.addEventListener("deviceorientation", (e) => {
+          const valSpan = document.getElementById("beta-val");
+          if (!valSpan) return; // モジュールが存在しない(生成前)なら無視
+
+          // 角度取得
+          const beta = e.beta || 0;
+
+          // 数値のみ表示 (単位なし)
+          valSpan.innerText = beta.toFixed(1);
+
+          // 判定: 135.0度 ±0.1度
+          if (Math.abs(beta - 135.0) <= 0.1) {
+            if (holdStartTime === 0) holdStartTime = Date.now();
+            const elapsed = Date.now() - holdStartTime;
+
+            if (elapsed >= 5000) {
+              // クリア演出
+              valSpan.innerText = "SYNC";
+              valSpan.classList.add("synced");
+              // 実績解除処理...
+            }
+          } else {
+            holdStartTime = 0;
+            valSpan.classList.remove("synced");
+          }
+        });
+      }
+      // --- CABLE PATCH LOGIC (ケーブル監視) ---
+      // IntersectionObserverのコールバック内、または requestAnimationFrame で常時監視
+      // 既存の observer の中にある `checkGlobalPuzzles()` などを拡張して使います
+
+      // ★これを既存の observer 処理の末尾に追加、または setInterval で回す
+      setInterval(() => {
+        checkCableConnection();
+      }, 500);
+
+      function checkCableConnection() {
+        const { top, mid, bot } = gameState.activeIndices;
+
+        // 現在の各段のズレを計算 (20個のループを考慮)
+        // 基準: T:3, M:8, B:15 で繋がる
+        // つまり、常に以下の関係が維持されていればOK
+        // Top = (Mid - 5)
+        // Bot = (Mid + 7)
+
+        // JSの % は負の数になることがあるので、+20 してから % 20 する
+        const targetTop = (mid - 5 + 20) % 20;
+        const targetBot = (mid + 7 + 20) % 20;
+
+        // 現在の位置がターゲットと一致しているか
+        const isConnected = top === targetTop && bot === targetBot;
+
+        if (isConnected) {
+          if (!gameState.isCablePowered) {
+            gameState.isCablePowered = true;
+            console.log("CABLE CONNECTED (Internal)");
+          }
+        } else {
+          if (gameState.isCablePowered) {
+            gameState.isCablePowered = false;
+          }
+        }
+
+        // モニター表示の更新 (Mid-13を見ている時だけ反映)
+        // ※ checkCableConnectionは常時回っているので、ここでDOM更新してもOK
+        const monitor = document.getElementById("cable-monitor");
+        if (monitor) {
+          if (gameState.isCablePowered) {
+            // 繋がっていればオンライン表示
+            monitor.className = "monitor-on";
+            monitor.innerHTML = "SYSTEM ONLINE<br>CABLE LINKED";
+          } else {
+            // 切れていればオフライン
+            monitor.className = "monitor-off";
+            monitor.innerHTML = "NO SIGNAL";
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
