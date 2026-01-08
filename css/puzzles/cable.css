@@ -28,12 +28,11 @@
 }
 
 /* モニター (Mid-13用) */
-.monitor-on {
-  /* .crt-screen のスタイルを継承または併用する前提 */
+.crt-screen.monitor-on {
   color: #3f3;
   text-shadow: 0 0 5px #3f3, 0 0 10px #3f3; /* 強く発光 */
 }
-.monitor-off {
+.crt-screen.monitor-off {
   color: #111; /* 電源オフ時は文字がうっすら見えるか、完全に見えない */
   text-shadow: none;
 }
