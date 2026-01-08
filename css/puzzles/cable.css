@@ -28,22 +28,14 @@
 }
 
 /* モニター (Mid-13用) */
-.monitor-off {
-  width: 100%;
-  height: 100%;
-  background: #050505;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #111;
-  font-family: monospace;
-  text-shadow: none;
-}
 .monitor-on {
-  background: #000;
+  /* .crt-screen のスタイルを継承または併用する前提 */
   color: #3f3;
-  text-shadow: 0 0 10px #3f3;
-  animation: flicker 0.1s infinite;
+  text-shadow: 0 0 5px #3f3, 0 0 10px #3f3; /* 強く発光 */
+}
+.monitor-off {
+  color: #111; /* 電源オフ時は文字がうっすら見えるか、完全に見えない */
+  text-shadow: none;
 }
 @keyframes flicker {
   0% {
