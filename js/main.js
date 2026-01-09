@@ -96,46 +96,36 @@ function initLane(laneId, tierName) {
   
   // LOCK中の同期スクロール（中段のみ）
   if (tierName === "mid") {
-    let touchStartX = 0;
-    let scrollStartPos = 0;
     let isTouching = false;
     let hasMoved = false;
+    let lastScrollLeft = lane.scrollLeft;
+    
+    // scrollイベントでリアルタイム同期（LOCK中のみ）
+    lane.addEventListener("scroll", () => {
+      if (!gameState.isLocked) return;
+      
+      const botLane = document.getElementById("lane-bot");
+      if (botLane) {
+        // 中段のscrollLeftをそのまま下段に反映
+        botLane.scrollLeft = lane.scrollLeft;
+      }
+      
+      // 動いたかチェック
+      if (isTouching && Math.abs(lane.scrollLeft - lastScrollLeft) > 1) {
+        hasMoved = true;
+      }
+      lastScrollLeft = lane.scrollLeft;
+    });
     
     lane.addEventListener("touchstart", (e) => {
       if (!gameState.isLocked) return;
       
-      // LOCK中はネイティブスクロールを止める
-      e.preventDefault();
-      e.stopPropagation();
-      
       isTouching = true;
       hasMoved = false;
-      touchStartX = e.touches[0].clientX;
-      scrollStartPos = lane.scrollLeft;
-    }, { passive: false }); // passiveをfalseに
+      lastScrollLeft = lane.scrollLeft;
+    });
     
-    lane.addEventListener("touchmove", (e) => {
-      if (!gameState.isLocked || !isTouching) return;
-      
-      // LOCK中はネイティブスクロールを止める
-      e.preventDefault();
-      e.stopPropagation();
-      
-      hasMoved = true;
-      const touchCurrentX = e.touches[0].clientX;
-      const diffX = touchStartX - touchCurrentX;
-      const newScrollPos = scrollStartPos + diffX;
-      
-      // 中段と下段を同期してスクロール
-      lane.scrollLeft = newScrollPos;
-      
-      const botLane = document.getElementById("lane-bot");
-      if (botLane) {
-        botLane.scrollLeft = newScrollPos;
-      }
-    }, { passive: false }); // passiveをfalseに
-    
-    lane.addEventListener("touchend", (e) => {
+    lane.addEventListener("touchend", () => {
       if (!gameState.isLocked || !isTouching) return;
       
       isTouching = false;
@@ -149,7 +139,7 @@ function initLane(laneId, tierName) {
           const nearestIndex = Math.round(currentScroll / w);
           const snapPosition = nearestIndex * w;
           
-          // スムーズにスナップ
+          // スムーズにスナップ（両方）
           lane.scrollTo({
             left: snapPosition,
             behavior: "smooth"
