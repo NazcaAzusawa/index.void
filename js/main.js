@@ -192,18 +192,14 @@ function checkCableConnection() {
   // ※ checkCableConnectionは常時回っているので、ここでDOM更新してもOK
   const monitor = document.getElementById("cable-monitor");
   if (monitor) {
-    if (!gameState.isCablePowered) {
-      // 状態1: 切れている（NO SIGNAL）
-      monitor.className = "monitor-off";
-      monitor.innerHTML = "NO SIGNAL";
-    } else if (!gameState.isCableCleared) {
-      // 状態2: 接続中だが5秒未経過（砂嵐）
-      monitor.className = "monitor-static";
-      monitor.innerHTML = '<div class="static-noise"></div>';
-    } else {
-      // 状態3: 5秒経過してクリア（SYSTEM ONLINE）
+    if (gameState.isCablePowered && gameState.isCableCleared) {
+      // 状態: 接続して5秒経過してクリア（SYSTEM ONLINE）
       monitor.className = "monitor-on";
       monitor.innerHTML = "SYSTEM ONLINE<br>CABLE LINKED";
+    } else {
+      // 状態: 常に砂嵐（接続していない時も、接続中だが5秒未経過の時も）
+      monitor.className = "monitor-static";
+      monitor.innerHTML = '<div class="static-noise"></div>';
     }
   }
 }
