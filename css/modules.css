@@ -13,5 +13,6 @@
 @import url("puzzles/rainbow_screen.css"); /* 虹色タッチスクリーン */
 @import url("puzzles/face_camera.css");   /* 顔カメラ */
 @import url("puzzles/unhappy_panel.css"); /* UNHAPPYパネル */
+@import url("puzzles/color_camera.css");  /* カラーボーダー＋カメラ */
 @import url("achievements.css"); /* 実績システム */
 @import url("permissions.css"); /* 権限管理システム */

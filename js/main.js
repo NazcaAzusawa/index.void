@@ -3,6 +3,7 @@ import { renderModule, handleAction, triggerMorseVibration, setGameStateRef } fr
 import * as ballMonitor from "./puzzles/ball_monitor.js";
 import * as rainbowScreen from "./puzzles/rainbow_screen.js";
 import * as faceCamera from "./puzzles/face_camera.js";
+import * as colorCamera from "./puzzles/color_camera.js";
 import { openAchievements } from "./achievements.js";
 
 // --- STATE MANAGEMENT (脳) ---
@@ -383,6 +384,13 @@ const observer = new IntersectionObserver(
             faceCamera.initFaceDetection(gameState);
           }, 100);
         }
+        
+        // BOT-8 (カラーカメラ) が表示されたらアウトカメラを起動
+        if (tier === "bot" && index === 8) {
+          setTimeout(() => {
+            colorCamera.initBackCamera();
+          }, 100);
+        }
       } else {
         // TOP-5 が非表示になったらマイク監視を停止
         const tier = entry.target.dataset.tier;
@@ -399,6 +407,11 @@ const observer = new IntersectionObserver(
         // TOP-7 が非表示になったら顔検出を停止
         if (tier === "top" && index === 7) {
           faceCamera.stopFaceDetection();
+        }
+        
+        // BOT-8 が非表示になったらアウトカメラを停止
+        if (tier === "bot" && index === 8) {
+          colorCamera.stopBackCamera();
         }
       }
     });

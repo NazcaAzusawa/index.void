@@ -11,7 +11,6 @@ export function render(config, gameStateRef) {
     <div class="face-camera-container">
       <video id="face-video" autoplay playsinline muted></video>
       <canvas id="face-canvas"></canvas>
-      <div class="camera-status" id="camera-status">INITIALIZING...</div>
     </div>
   `;
 }
@@ -46,7 +45,6 @@ export async function initFaceDetection(gameState) {
   
   video = document.getElementById("face-video");
   const canvas = document.getElementById("face-canvas");
-  const statusEl = document.getElementById("camera-status");
   
   if (!video || !canvas) return;
   
@@ -61,7 +59,6 @@ export async function initFaceDetection(gameState) {
     });
     
     video.srcObject = stream;
-    statusEl.innerText = "LOADING MODEL...";
     
     // ビデオが再生されるまで待つ
     await new Promise((resolve) => {
@@ -77,7 +74,6 @@ export async function initFaceDetection(gameState) {
     
     // face-api.jsモデルをロード
     await loadModels();
-    statusEl.innerText = "DETECTING...";
     
     isDetecting = true;
     
@@ -101,8 +97,16 @@ export async function initFaceDetection(gameState) {
           // 笑顔スコアが0.7以上（70%）でクリア
           if (happyScore > 0.7 && !gameState.isSmileCleared) {
             gameState.isSmileCleared = true;
-            statusEl.innerText = "SMILE DETECTED";
-            statusEl.style.color = "#33ff33";
+            
+            // MID-7が表示されていたら「YOU ARE HAPPY」に変更
+            if (gameState.activeIndices.mid === 7) {
+              const unhappyPanel = document.querySelector(".unhappy-text");
+              if (unhappyPanel) {
+                unhappyPanel.innerHTML = "YOU ARE<br>HAPPY";
+                unhappyPanel.style.color = "#33ff33";
+                unhappyPanel.style.textShadow = "0 0 10px rgba(51, 255, 51, 0.8)";
+              }
+            }
             
             // 効果音再生
             const audio = new Audio("ac.wav");
@@ -119,10 +123,6 @@ export async function initFaceDetection(gameState) {
     
   } catch (err) {
     console.error("Face detection failed:", err);
-    if (statusEl) {
-      statusEl.innerText = "CAMERA ERROR";
-      statusEl.style.color = "#ff3333";
-    }
   }
 }
 
