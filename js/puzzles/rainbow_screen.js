@@ -31,11 +31,12 @@ export function initTouchControl(gameState) {
     const rect = screen.getBoundingClientRect();
     const x = clientX - rect.left; // スクリーン内の相対X座標（ピクセル）
     
-    // 絶対座標として保存（画面の絶対X座標）
-    gameState.wallX = clientX;
+    // BOT-6内の相対位置（0-100%）として保存
+    const percentX = (x / rect.width) * 100;
+    gameState.wallX = Math.max(0, Math.min(100, percentX));
     
-    // インジケーターの位置を更新（スクリーン内の相対位置）
-    indicator.style.left = `${x}px`;
+    // インジケーターの位置を更新（パーセンテージで）
+    indicator.style.left = `${gameState.wallX}%`;
     indicator.style.transform = 'translateX(-50%)';
   };
   
@@ -63,9 +64,8 @@ export function initTouchControl(gameState) {
     isTouching = false;
   });
   
-  // 初期位置を中央に設定（画面の中央の絶対座標）
-  const rect = screen.getBoundingClientRect();
-  gameState.wallX = rect.left + rect.width / 2;
+  // 初期位置を中央に設定（50%）
+  gameState.wallX = 50;
   indicator.style.left = '50%';
   
   console.log("Rainbow screen touch control initialized");

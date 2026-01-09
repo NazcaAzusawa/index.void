@@ -114,9 +114,10 @@ export function updatePhysics(gameState) {
   const width = container.offsetWidth;
   const height = container.offsetHeight;
   
-  // BOT-6からの壁の位置を取得（絶対座標・ピクセル値）
+  // BOT-6からの壁の位置を取得（相対位置：0-100%）
   if (gameState.wallX !== null) {
-    const targetX = gameState.wallX; // 絶対座標をそのまま使用
+    // パーセンテージをTOP-6のピクセル座標に変換
+    const targetX = (gameState.wallX / 100) * width;
     const { Body } = window.Matter;
     
     // 壁を移動（速度を持たせて押す）
