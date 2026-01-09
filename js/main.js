@@ -5,6 +5,7 @@ import * as rainbowScreen from "./puzzles/rainbow_screen.js";
 import * as faceCamera from "./puzzles/face_camera.js";
 import * as colorCamera from "./puzzles/color_camera.js";
 import * as maze from "./puzzles/maze.js";
+import * as timeSync from "./puzzles/time_sync.js";
 import { openAchievements } from "./achievements.js";
 
 // --- STATE MANAGEMENT (脳) ---
@@ -26,6 +27,7 @@ const gameState = {
   isSmileCleared: false, // 笑顔検出クリア
   isColorPurpleCleared: false, // 紫色検出クリア
   isMazeCleared: false, // 迷路パズルクリア
+  isTimeSyncCleared: false, // 時刻同期パズルクリア
 };
 
 // modules.jsにgameStateの参照を設定
@@ -508,6 +510,29 @@ const observer = new IntersectionObserver(
             maze.initMaze(gameState);
           }, 100);
         }
+        
+        // TOP-10, BOT-10 (時刻同期パズル) が表示されたら時刻更新を開始
+        if ((tier === "top" && index === 10) || (tier === "bot" && index === 10)) {
+          setTimeout(() => {
+            // 両方のモジュールが表示されているかチェック
+            const topModule = document.querySelector('.module[data-tier="top"][data-index="10"]');
+            const botModule = document.querySelector('.module[data-tier="bot"][data-index="10"]');
+            
+            if (topModule && botModule) {
+              const topRect = topModule.getBoundingClientRect();
+              const botRect = botModule.getBoundingClientRect();
+              const viewportWidth = window.innerWidth;
+              
+              // 両方が画面内に表示されているか確認（60%以上表示）
+              const topVisible = topRect.left < viewportWidth * 0.8 && topRect.right > viewportWidth * 0.2;
+              const botVisible = botRect.left < viewportWidth * 0.8 && botRect.right > viewportWidth * 0.2;
+              
+              if (topVisible && botVisible) {
+                timeSync.initTimeSync(gameState);
+              }
+            }
+          }, 100);
+        }
       } else {
         // TOP-5 が非表示になったらマイク監視を停止
         const tier = entry.target.dataset.tier;
@@ -534,6 +559,11 @@ const observer = new IntersectionObserver(
         // TOP-9 が非表示になったら迷路パズルを停止
         if (tier === "top" && index === 9) {
           maze.stopMaze();
+        }
+        
+        // TOP-10, BOT-10 が非表示になったら時刻同期を停止
+        if ((tier === "top" && index === 10) || (tier === "bot" && index === 10)) {
+          timeSync.stopTimeSync();
         }
         
       }

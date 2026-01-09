@@ -5,8 +5,8 @@
 const MAZE = [
   [0,0,1,1,1,0,0,0,1,1,1,0,0],
   [0,1,0,0,0,1,0,1,0,0,0,1,0],
-  [1,0,0,1,0,0,1,'G',0,0,0,1,0],
-  [1,0,1,1,0,'S',1,1,0,0,1,0,1],
+  [1,0,0,1,0,'S',1,'G',0,0,0,1,0],
+  [1,0,1,1,0,0,1,1,0,0,1,0,1],
   [1,0,0,0,0,0,0,0,1,0,0,0,1],
   [0,1,1,1,0,0,1,0,0,0,0,1,0],
   [0,0,0,0,1,1,0,1,1,1,1,0,0]
@@ -49,6 +49,9 @@ const TILT_THRESHOLD = 15;
 let hitWallX = null;
 let hitWallY = null;
 let wallFlashTimeout = null;
+// 最後に光った壁の座標（同じ壁が連続して当たった場合は光らない）
+let lastFlashedWallX = null;
+let lastFlashedWallY = null;
 
 export function render(config, gameStateRef) {
   return `
@@ -147,6 +150,14 @@ function moveBall(dx, dy) {
 
 // 当たった壁を白色で一瞬表示
 function flashWall(x, y) {
+  // 壁の座標が無効な場合は何もしない
+  if (x === null || y === null) return;
+  
+  // 最後に光った壁と同じ座標の場合は何もしない
+  if (x === lastFlashedWallX && y === lastFlashedWallY) {
+    return;
+  }
+  
   // 既存のタイマーをクリア
   if (wallFlashTimeout) {
     clearTimeout(wallFlashTimeout);
@@ -155,6 +166,10 @@ function flashWall(x, y) {
   // 当たった壁の座標を設定
   hitWallX = x;
   hitWallY = y;
+  
+  // 最後に光った壁の座標を記録
+  lastFlashedWallX = x;
+  lastFlashedWallY = y;
   
   // 再描画
   const canvas = document.getElementById('maze-canvas');
@@ -240,6 +255,12 @@ export function initMaze(gameState) {
   ballX = startX;
   ballY = startY;
   
+  // 壁の表示をリセット
+  hitWallX = null;
+  hitWallY = null;
+  lastFlashedWallX = null;
+  lastFlashedWallY = null;
+  
   // キャンバスを取得
   const canvas = document.getElementById('maze-canvas');
   if (!canvas) return;
@@ -278,6 +299,8 @@ export function stopMaze() {
   // 壁の表示をリセット
   hitWallX = null;
   hitWallY = null;
+  lastFlashedWallX = null;
+  lastFlashedWallY = null;
   
   console.log('Maze puzzle stopped');
 }

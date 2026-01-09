@@ -19,6 +19,7 @@ import * as faceCameraPuzzle from "./puzzles/face_camera.js"; // 顔カメラ
 import * as unhappyPanelPuzzle from "./puzzles/unhappy_panel.js"; // UNHAPPYパネル
 import * as colorCameraPuzzle from "./puzzles/color_camera.js"; // カラーボーダー＋カメラ
 import * as mazePuzzle from "./puzzles/maze.js"; // 傾き迷路パズル
+import * as timeSyncPuzzle from "./puzzles/time_sync.js"; // 時刻同期パズル
 
 // ゲーム状態を外部から受け取るための参照
 export let gameStateRef = null;
@@ -61,6 +62,9 @@ const puzzleMap = {
   
   // 迷路パズル
   maze: mazePuzzle,                    // 傾き迷路パズル
+  
+  // 時刻同期パズル
+  time_sync: timeSyncPuzzle,           // 時刻同期パズル
 };
 
 // モジュールのHTML生成関数

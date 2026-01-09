@@ -72,6 +72,13 @@ export const ACHIEVEMENTS = [
     module: "TOP-9",
     flavor: "「迷路は意思を持たない。しかしあなたは重力を操り、世界を傾け、唯一の出口へと導かれた。壁にぶつかり続けることで、ようやく真実の道が見えた。この世界に真の自由はない—全ては決められた経路の上を滑っているだけだ。」",
     flag: "isMazeCleared"
+  },
+  {
+    id: "time_sync",
+    name: "TEMPORAL PARADOX",
+    module: "TOP-10, BOT-10",
+    flavor: "「時間は一方向に流れると信じていた。しかしあなたは端末の時計を操り、未来と現在を一致させた。API時刻の1時間後—それは本来到達できない座標。時間の流れを欺いた瞬間、因果律は崩壊し、過去と未来の境界が消えた。」",
+    flag: "isTimeSyncCleared"
   }
 ];
 
