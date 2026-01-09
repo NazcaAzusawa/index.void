@@ -25,17 +25,7 @@
 .detected-color {
   background: #333;
   transition: background 0.5s ease;
-}
-
-.color-label {
-  font-family: 'Courier New', monospace;
-  font-size: 18px;
-  font-weight: bold;
-  color: #fff;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5);
-  letter-spacing: 2px;
-  writing-mode: vertical-rl;
-  text-orientation: upright;
+  display: none; /* 初期状態は非表示（カメラを隠す） */
 }
 
 /* カラーストリップ */

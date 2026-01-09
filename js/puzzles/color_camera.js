@@ -7,6 +7,7 @@ let ctx = null;
 let stream = null;
 let detectionInterval = null;
 let isDetecting = false;
+let isCameraReady = false;
 
 // 色の定義（RGB値）
 const COLOR_DEFINITIONS = {
@@ -27,9 +28,7 @@ export function render(config, gameStateRef) {
     <div class="color-camera-module">
       <video id="back-camera-video" autoplay playsinline muted style="display:none;"></video>
       <canvas id="color-canvas" style="display:none;"></canvas>
-      <div class="color-strip detected-color" id="detected-color">
-        <span class="color-label">測定中...</span>
-      </div>
+      <div class="color-strip detected-color" id="detected-color"></div>
       <div class="color-strip blue-strip"></div>
       <div class="color-strip red-strip"></div>
       <div class="color-strip yellow-strip"></div>
@@ -65,8 +64,31 @@ function detectColor(r, g, b) {
     }
   }
   
-  // あまりにも遠い場合は「虹色」
-  if (minDistance > 150) {
+  // 紫の判定は厳密に（距離60以下）
+  if (closestColor.key === "purple" && minDistance > 60) {
+    // 紫以外の色を再検索
+    let secondMinDistance = Infinity;
+    let secondClosestColor = null;
+    
+    for (const [key, color] of Object.entries(COLOR_DEFINITIONS)) {
+      if (key === "purple") continue;
+      const distance = colorDistance(r, g, b, color.r, color.g, color.b);
+      if (distance < secondMinDistance) {
+        secondMinDistance = distance;
+        secondClosestColor = { key, ...color };
+      }
+    }
+    
+    // 他の色も遠い場合は虹色
+    if (secondMinDistance > 200) {
+      return { key: "rainbow", label: "虹色", r, g, b };
+    }
+    
+    return secondClosestColor;
+  }
+  
+  // 紫以外は緩い判定（距離200以下）
+  if (minDistance > 200) {
     return { key: "rainbow", label: "虹色", r, g, b };
   }
   
@@ -77,11 +99,21 @@ function detectColor(r, g, b) {
 function detectColorFromCamera(gameState) {
   if (!video || !canvas || !ctx) return;
   if (video.paused || video.ended) return;
+  if (!isCameraReady) return; // カメラが準備できるまで何もしない
   
   // カメラ映像をキャンバスに描画
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  // 映像サイズが取得できない場合は何もしない
+  if (canvas.width === 0 || canvas.height === 0) return;
+  
+  try {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  } catch (err) {
+    console.error("Failed to draw camera frame:", err);
+    return;
+  }
   
   // 画像の中央部分の色を取得（100x100ピクセル）
   const centerX = Math.floor(canvas.width / 2) - 50;
@@ -108,11 +140,8 @@ function detectColorFromCamera(gameState) {
   
   // 結果を表示
   const colorDiv = document.getElementById("detected-color");
-  const colorLabel = colorDiv.querySelector(".color-label");
   
-  if (colorDiv && colorLabel) {
-    colorLabel.innerText = detectedColor.label;
-    
+  if (colorDiv) {
     if (detectedColor.key === "rainbow") {
       colorDiv.style.background = `linear-gradient(to right, 
         red, orange, yellow, green, cyan, blue, purple)`;
@@ -156,7 +185,26 @@ export async function initBackCamera(gameState) {
     });
     
     video.srcObject = stream;
-    await video.play();
+    
+    // ビデオが再生可能になるまで待つ
+    await new Promise((resolve, reject) => {
+      video.onloadedmetadata = () => {
+        video.play().then(() => {
+          isCameraReady = true; // カメラ準備完了
+          
+          // カメラ準備完了したら検出色のストライプを表示
+          const colorDiv = document.getElementById("detected-color");
+          if (colorDiv) {
+            colorDiv.style.display = "flex";
+          }
+          
+          resolve();
+        }).catch(reject);
+      };
+      
+      // タイムアウト（5秒）
+      setTimeout(() => reject(new Error("Camera timeout")), 5000);
+    });
     
     isDetecting = true;
     
@@ -168,16 +216,15 @@ export async function initBackCamera(gameState) {
     console.log("Color detection started");
   } catch (err) {
     console.error("Back camera failed:", err);
-    const colorLabel = document.querySelector(".color-label");
-    if (colorLabel) {
-      colorLabel.innerText = "カメラエラー";
-    }
+    // エラー時は何も表示を変えない（カメラの存在を隠す）
+    isCameraReady = false;
   }
 }
 
 // カメラを停止
 export function stopBackCamera() {
   isDetecting = false;
+  isCameraReady = false;
   
   if (detectionInterval) {
     clearInterval(detectionInterval);
@@ -192,6 +239,12 @@ export function stopBackCamera() {
   if (video) {
     video.srcObject = null;
     video = null;
+  }
+  
+  // 色のストライプを非表示に戻す
+  const colorDiv = document.getElementById("detected-color");
+  if (colorDiv) {
+    colorDiv.style.display = "none";
   }
   
   canvas = null;
