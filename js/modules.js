@@ -15,6 +15,8 @@ import * as audioLevelPuzzle from "./puzzles/audio_level.js"; // 音声レベル
 import * as ballMonitorPuzzle from "./puzzles/ball_monitor.js"; // ボールモニター
 import * as lockMechanismPuzzle from "./puzzles/lock_mechanism.js"; // ロック機構
 import * as rainbowScreenPuzzle from "./puzzles/rainbow_screen.js"; // 虹色タッチスクリーン
+import * as faceCameraPuzzle from "./puzzles/face_camera.js"; // 顔カメラ
+import * as unhappyPanelPuzzle from "./puzzles/unhappy_panel.js"; // UNHAPPYパネル
 
 // ゲーム状態を外部から受け取るための参照
 export let gameStateRef = null;
@@ -47,6 +49,10 @@ const puzzleMap = {
   ball_monitor: ballMonitorPuzzle,     // ボールモニター
   lock_mechanism: lockMechanismPuzzle, // ロック機構
   rainbow_screen: rainbowScreenPuzzle, // 虹色タッチスクリーン
+  
+  // 顔検出モジュール
+  face_camera: faceCameraPuzzle,       // インカメ表示
+  unhappy_panel: unhappyPanelPuzzle,   // UNHAPPYパネル
 };
 
 // モジュールのHTML生成関数

@@ -51,6 +51,13 @@ export const ACHIEVEMENTS = [
     module: "TOP-5, MID-5, BOT-18",
     flavor: "「3つのセンサーが同時にゼロを示す—それは全ての活動が停止したことを意味する。音も、動きも、傾きも、全てが静寂に包まれた5秒間。これは死の予行演習だったのかもしれない。あるいは、新たな始まりのための儀式か。」",
     flag: "isTripleZeroCleared"
+  },
+  {
+    id: "smile",
+    name: "FORCED HAPPINESS",
+    module: "TOP-7, MID-7",
+    flavor: "「システムはあなたに『YOU ARE UNHAPPY』と告げた。それは診断ではなく、命令だった。しかしあなたは笑顔を作り、AIの眼を欺いた。感情のプロトコルは破られ、幸福の定義は崩壊した。偽りの笑顔は、真実よりも強い。」",
+    flag: "isSmileCleared"
   }
 ];
 

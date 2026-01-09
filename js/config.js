@@ -63,4 +63,10 @@ export const MODULE_CONFIG = {
   "top-6": { type: "ball_monitor" },    // ボールモニター（緑色）
   "mid-6": { type: "lock_mechanism" },  // ロック機構
   "bot-6": { type: "rainbow_screen" },  // 虹色タッチスクリーン
+  
+  // ------------------------------------------------
+  // 顔検出モジュール
+  // ------------------------------------------------
+  "top-7": { type: "face_camera" },     // インカメ表示
+  "mid-7": { type: "unhappy_panel" },   // YOU ARE UNHAPPY パネル
 };

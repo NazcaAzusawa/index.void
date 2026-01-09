@@ -2,6 +2,7 @@ import { MODULE_COUNT } from "./config.js";
 import { renderModule, handleAction, triggerMorseVibration, setGameStateRef } from "./modules.js";
 import * as ballMonitor from "./puzzles/ball_monitor.js";
 import * as rainbowScreen from "./puzzles/rainbow_screen.js";
+import * as faceCamera from "./puzzles/face_camera.js";
 import { openAchievements } from "./achievements.js";
 
 // --- STATE MANAGEMENT (脳) ---
@@ -20,6 +21,7 @@ const gameState = {
   isClipboardCleared: false, // クリップボードPASS入力クリア
   isLockUsed: false, // MID-6 LOCKを使用したか
   isTripleZeroCleared: false, // TOP5/MID5/BOT18が全て0で5秒
+  isSmileCleared: false, // 笑顔検出クリア
 };
 
 // modules.jsにgameStateの参照を設定
@@ -374,6 +376,13 @@ const observer = new IntersectionObserver(
             rainbowScreen.initTouchControl(gameState);
           }, 100);
         }
+        
+        // TOP-7 (顔カメラ) が表示されたら顔検出を開始
+        if (tier === "top" && index === 7) {
+          setTimeout(() => {
+            faceCamera.initFaceDetection(gameState);
+          }, 100);
+        }
       } else {
         // TOP-5 が非表示になったらマイク監視を停止
         const tier = entry.target.dataset.tier;
@@ -385,6 +394,11 @@ const observer = new IntersectionObserver(
         // TOP-6 が非表示になったら物理演算を停止
         if (tier === "top" && index === 6) {
           ballMonitor.stopPhysics();
+        }
+        
+        // TOP-7 が非表示になったら顔検出を停止
+        if (tier === "top" && index === 7) {
+          faceCamera.stopFaceDetection();
         }
       }
     });
