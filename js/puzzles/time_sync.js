@@ -6,8 +6,10 @@ let apiBaseTime = null;
 let apiBaseLocalTime = null; // API取得時の端末時刻
 
 // 更新インターバル
-let updateInterval = null;
-let isActive = false;
+let deviceUpdateInterval = null;
+let apiUpdateInterval = null;
+let isDeviceActive = false;
+let isApiActive = false;
 
 export function render(config, gameStateRef) {
   const variant = config.variant; // "device" or "api"
@@ -136,39 +138,89 @@ async function fetchApiTime() {
   }
 }
 
-// 時刻同期パズルを初期化
-export async function initTimeSync(gameState) {
-  if (isActive) return;
+// 端末時刻を初期化（TOP-10用）
+export function initDeviceTime(gameState) {
+  if (isDeviceActive) return;
   
-  isActive = true;
-  
-  // API時刻を取得
-  await fetchApiTime();
+  isDeviceActive = true;
   
   // 初回更新
   updateDeviceTime();
+  
+  // 1秒ごとに更新
+  deviceUpdateInterval = setInterval(() => {
+    updateDeviceTime();
+    // 両方が表示されている場合のみ一致判定
+    if (isApiActive) {
+      checkTimeMatch(gameState);
+    }
+  }, 1000);
+  
+  console.log('Device time initialized');
+}
+
+// 端末時刻を停止
+export function stopDeviceTime() {
+  if (!isDeviceActive) return;
+  
+  isDeviceActive = false;
+  
+  if (deviceUpdateInterval) {
+    clearInterval(deviceUpdateInterval);
+    deviceUpdateInterval = null;
+  }
+  
+  console.log('Device time stopped');
+}
+
+// API時刻を初期化（BOT-10用）
+export async function initApiTime(gameState) {
+  if (isApiActive) return;
+  
+  isApiActive = true;
+  
+  // API時刻を取得（まだ取得していない場合のみ）
+  if (!apiBaseTime) {
+    await fetchApiTime();
+  }
+  
+  // 初回更新
   updateApiTime();
   
   // 1秒ごとに更新
-  updateInterval = setInterval(() => {
-    updateDeviceTime();
+  apiUpdateInterval = setInterval(() => {
     updateApiTime();
-    checkTimeMatch(gameState);
+    // 両方が表示されている場合のみ一致判定
+    if (isDeviceActive) {
+      checkTimeMatch(gameState);
+    }
   }, 1000);
   
-  console.log('Time sync puzzle initialized');
+  console.log('API time initialized');
 }
 
-// 時刻同期パズルを停止
-export function stopTimeSync() {
-  if (!isActive) return;
+// API時刻を停止
+export function stopApiTime() {
+  if (!isApiActive) return;
   
-  isActive = false;
+  isApiActive = false;
   
-  if (updateInterval) {
-    clearInterval(updateInterval);
-    updateInterval = null;
+  if (apiUpdateInterval) {
+    clearInterval(apiUpdateInterval);
+    apiUpdateInterval = null;
   }
   
-  console.log('Time sync puzzle stopped');
+  console.log('API time stopped');
+}
+
+// 後方互換性のため（両方初期化する場合）
+export async function initTimeSync(gameState) {
+  await initDeviceTime(gameState);
+  await initApiTime(gameState);
+}
+
+// 後方互換性のため（両方停止する場合）
+export function stopTimeSync() {
+  stopDeviceTime();
+  stopApiTime();
 }

@@ -12,10 +12,11 @@
 
 .time-label {
   font-family: 'Courier New', monospace;
-  font-size: 16px;
+  font-size: 28px;
+  font-weight: bold;
   color: #888;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
 }
 
 .time-monitor {

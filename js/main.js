@@ -511,26 +511,17 @@ const observer = new IntersectionObserver(
           }, 100);
         }
         
-        // TOP-10, BOT-10 (時刻同期パズル) が表示されたら時刻更新を開始
-        if ((tier === "top" && index === 10) || (tier === "bot" && index === 10)) {
+        // TOP-10 (端末時刻) が表示されたら時刻更新を開始
+        if (tier === "top" && index === 10) {
           setTimeout(() => {
-            // 両方のモジュールが表示されているかチェック
-            const topModule = document.querySelector('.module[data-tier="top"][data-index="10"]');
-            const botModule = document.querySelector('.module[data-tier="bot"][data-index="10"]');
-            
-            if (topModule && botModule) {
-              const topRect = topModule.getBoundingClientRect();
-              const botRect = botModule.getBoundingClientRect();
-              const viewportWidth = window.innerWidth;
-              
-              // 両方が画面内に表示されているか確認（60%以上表示）
-              const topVisible = topRect.left < viewportWidth * 0.8 && topRect.right > viewportWidth * 0.2;
-              const botVisible = botRect.left < viewportWidth * 0.8 && botRect.right > viewportWidth * 0.2;
-              
-              if (topVisible && botVisible) {
-                timeSync.initTimeSync(gameState);
-              }
-            }
+            timeSync.initDeviceTime(gameState);
+          }, 100);
+        }
+        
+        // BOT-10 (API時刻) が表示されたら時刻更新を開始
+        if (tier === "bot" && index === 10) {
+          setTimeout(() => {
+            timeSync.initApiTime(gameState);
           }, 100);
         }
       } else {
@@ -561,9 +552,14 @@ const observer = new IntersectionObserver(
           maze.stopMaze();
         }
         
-        // TOP-10, BOT-10 が非表示になったら時刻同期を停止
-        if ((tier === "top" && index === 10) || (tier === "bot" && index === 10)) {
-          timeSync.stopTimeSync();
+        // TOP-10 が非表示になったら端末時刻を停止
+        if (tier === "top" && index === 10) {
+          timeSync.stopDeviceTime();
+        }
+        
+        // BOT-10 が非表示になったらAPI時刻を停止
+        if (tier === "bot" && index === 10) {
+          timeSync.stopApiTime();
         }
         
       }
