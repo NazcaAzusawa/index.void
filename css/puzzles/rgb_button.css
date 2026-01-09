@@ -26,5 +26,5 @@
 }
 .btn-blue {
   background: radial-gradient(circle, #4444ff 0%, #000088 100%);
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+  box-shadow: 0 0 20px rgba(0, 0, 255, 0.4);
 }

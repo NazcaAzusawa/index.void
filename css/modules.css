@@ -12,3 +12,4 @@
 @import url("puzzles/lock_mechanism.css"); /* ロック機構 */
 @import url("puzzles/rainbow_screen.css"); /* 虹色タッチスクリーン */
 @import url("achievements.css"); /* 実績システム */
+@import url("permissions.css"); /* 権限管理システム */
