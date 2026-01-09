@@ -145,12 +145,38 @@ body {
   justify-content: center;
 }
 
-/* --- 走査線エフェクト --- */
-.scanlines {
-  /* 走査線エフェクト用のスタイル（必要に応じて追加） */
+/* --- CRT Screen (走査線エフェクト) --- */
+.crt-screen {
+  width: 90%;
+  height: 80%;
+  background-color: #050505; /* 漆黒の画面 */
+  border: 4px solid #333;    /* モニターのベゼル（枠） */
+  border-radius: 4px;        /* 角を少し丸める */
+  /* 内側に影を落として「奥行き」を出す */
+  box-shadow: inset 0 0 20px rgba(0,0,0,1), 0 0 0 1px #555; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+  position: relative;
 }
 
-/* --- デバッグパネル --- */
+/* 画面上の走査線（さらにリアルにするなら） */
+.crt-screen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* デバッグ用 (右上の小さいやつ) */
 #debug-panel {
   position: fixed;
   top: 5px;
@@ -161,26 +187,3 @@ body {
   pointer-events: none;
   opacity: 0.5;
 }
-
-.crt-screen {
-    width: 90%; height: 80%;
-    background-color: #050505; /* 漆黒の画面 */
-    border: 4px solid #333;    /* モニターのベゼル（枠） */
-    border-radius: 4px;        /* 角を少し丸める */
-    /* 内側に影を落として「奥行き」を出す */
-    box-shadow: inset 0 0 20px rgba(0,0,0,1), 0 0 0 1px #555; 
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Courier New', monospace;
-    overflow: hidden;
-    position: relative;
-  }
-  
-  /* 画面上の走査線（さらにリアルにするなら） */
-  .crt-screen::before {
-    content: "";
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    background-size: 100% 2px, 3px 100%;
-    pointer-events: none;
-    z-index: 10;
-  }

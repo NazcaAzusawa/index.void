@@ -1,9 +1,7 @@
-/* --- 個別モジュール専用スタイル --- */
-/* 各パズルモジュールのスタイルを @import で読み込む */
-
+/* --- パズルCSSのインポート --- */
 @import url("puzzles/system.css");
 @import url("puzzles/rgb_btn.css");
 @import url("puzzles/mimic.css");
+@import url("puzzles/parasite.css");
 @import url("puzzles/gyro.css");
 @import url("puzzles/cable.css");
-@import url("puzzles/parasite.css");

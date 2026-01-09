@@ -1,9 +1,8 @@
 import { MODULE_CONFIG } from "./config.js";
 
 // 各パズルファイルのインポート
-// ※ monitor.js や cipher.js は不要になりました（統合したため）
 import * as systemPuzzle from "./puzzles/system.js";
-import * as rgbPuzzle from "./puzzles/rgb.js"; // rgb.js または rgb_button.js (ファイル名に合わせてください)
+import * as rgbPuzzle from "./puzzles/rgb.js";
 import * as mimicPuzzle from "./puzzles/mimic.js";
 import * as clipboardPuzzle from "./puzzles/clipboard.js";
 import * as gyroPuzzle from "./puzzles/gyro.js";   // ★ジャイロ＆暗号兼用
@@ -16,7 +15,6 @@ export function setGameStateRef(state) {
   gameStateRef = state;
 }
 
-// ★ここが修正ポイント！
 // config.js の type 名を、実際の js ファイルに割り当てる辞書
 const puzzleMap = {
   system_menu: systemPuzzle,

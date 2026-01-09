@@ -39,7 +39,6 @@ function initLane(laneId, tierName) {
   const createModuleHTML = (index, isClone = false) => {
     const displayIndex = isClone ? `CLONE` : index;
     const content = renderModule(tierName, index);
-    // クローンと本体を区別しない共通の識別子を持たせる
 
     const el = document.createElement("div");
     el.className = "module";
@@ -245,4 +244,3 @@ document.addEventListener("touchend", () => {
   } else tapCnt = 1;
   lastTap = now;
 });
-
