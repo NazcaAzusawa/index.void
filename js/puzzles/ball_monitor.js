@@ -22,6 +22,23 @@ export function handleAction(action, config, tier, index, element, gameState, sh
   return false;
 }
 
+// ボールをランダム配置にリセット
+function resetBalls(width, height) {
+  if (!window.Matter || !balls.length) return;
+  
+  const { Body } = window.Matter;
+  
+  balls.forEach(ball => {
+    const x = Math.random() * (width - 40) + 20;
+    const y = Math.random() * (height - 40) + 20;
+    Body.setPosition(ball, { x, y });
+    Body.setVelocity(ball, { x: 0, y: 0 });
+    Body.setAngularVelocity(ball, 0);
+  });
+  
+  console.log("Balls reset to random positions");
+}
+
 let isInitialized = false; // 一度だけ初期化するフラグ
 
 // Matter.jsの初期化（グローバルから呼び出す）
@@ -59,12 +76,13 @@ export function initPhysics() {
   
   // 境界壁なし（画面外に自由に出られる）
   
-  // 可動壁（中央、縦長、薄い、透明）
-  wall = Bodies.rectangle(width / 2, height / 2, 5, height * 2, {
+  // 可動壁を2つに分割（上半分と下半分）
+  const wallThickness = 5;
+  const upperWall = Bodies.rectangle(width / 2, height / 4, wallThickness, height / 2, {
     isStatic: false,
-    density: 100, // 重い
+    density: 100,
     friction: 0,
-    frictionAir: 1, // 空気抵抗を最大にして即座に止まる
+    frictionAir: 1,
     restitution: 0,
     render: {
       fillStyle: 'transparent',
@@ -72,7 +90,22 @@ export function initPhysics() {
       lineWidth: 0
     }
   });
-  World.add(matterEngine.world, wall);
+  
+  const lowerWall = Bodies.rectangle(width / 2, height * 3 / 4, wallThickness, height / 2, {
+    isStatic: false,
+    density: 100,
+    friction: 0,
+    frictionAir: 1,
+    restitution: 0,
+    render: {
+      fillStyle: 'transparent',
+      strokeStyle: 'transparent',
+      lineWidth: 0
+    }
+  });
+  
+  wall = { upper: upperWall, lower: lowerWall };
+  World.add(matterEngine.world, [upperWall, lowerWall]);
   
   // ボールの作成（20個、ランダム配置）
   for (let i = 0; i < 20; i++) {
@@ -103,6 +136,7 @@ export function initPhysics() {
 }
 
 let lastWallX = null;
+let lastTopIndex = null;
 
 // 物理演算の更新（main.jsから呼び出す）
 export function updatePhysics(gameState) {
@@ -114,20 +148,33 @@ export function updatePhysics(gameState) {
   const width = container.offsetWidth;
   const height = container.offsetHeight;
   
+  // TOP段のインデックスが変わったらボールをリセット（クリア後は除く）
+  if (lastTopIndex !== null && lastTopIndex !== gameState.activeIndices.top && !gameState.isBallPuzzleCleared) {
+    resetBalls(width, height);
+  }
+  lastTopIndex = gameState.activeIndices.top;
+  
   // BOT-6からの壁の位置を取得（相対位置：0-100%）
   if (gameState.wallX !== null) {
-    // パーセンテージをTOP-6のピクセル座標に変換
-    const targetX = (gameState.wallX / 100) * width;
     const { Body } = window.Matter;
+    
+    // パーセンテージをTOP-6のピクセル座標に変換し、2%ずつずらす
+    const centerX = (gameState.wallX / 100) * width;
+    const offset = width * 0.02; // 2%のオフセット
+    
+    const upperTargetX = centerX - offset; // 上半分は-2%
+    const lowerTargetX = centerX + offset; // 下半分は+2%
     
     // 壁を移動（速度を持たせて押す）
     if (lastWallX !== null) {
-      const velocityX = (targetX - lastWallX) * 2; // 速度を2倍に
-      Body.setVelocity(wall, { x: velocityX, y: 0 });
+      const velocityX = (centerX - lastWallX) * 2;
+      Body.setVelocity(wall.upper, { x: velocityX, y: 0 });
+      Body.setVelocity(wall.lower, { x: velocityX, y: 0 });
     }
     
-    Body.setPosition(wall, { x: targetX, y: height });
-    lastWallX = targetX;
+    Body.setPosition(wall.upper, { x: upperTargetX, y: height / 4 });
+    Body.setPosition(wall.lower, { x: lowerTargetX, y: height * 3 / 4 });
+    lastWallX = centerX;
   }
   
   // モニターの実際のサイズを取得

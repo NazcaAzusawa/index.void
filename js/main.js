@@ -189,34 +189,29 @@ function initLane(laneId, tierName) {
     });
   }
   
-  // BOT-6でタッチイベントを吸収してスワイプを無効化
+  // BOT-6でスワイプを完全に無効化
   if (tierName === "bot") {
     lane.addEventListener("touchstart", (e) => {
       // ロック中は通常のスワイプを許可
       if (gameState.isLocked) return;
       
-      // BOT-6が表示されているかチェック
+      // BOT-6が表示されているときは完全にスワイプ無効化
       if (gameState.activeIndices.bot === 6) {
-        // BOT-6のrainbow-screen-fullscreen要素をタッチしている場合のみ無効化
-        const target = e.target.closest(".rainbow-screen-fullscreen");
-        if (target) {
-          e.stopPropagation();
-        }
+        e.preventDefault();
+        e.stopPropagation();
       }
-    });
+    }, { passive: false });
     
     lane.addEventListener("touchmove", (e) => {
       // ロック中は通常のスワイプを許可
       if (gameState.isLocked) return;
       
-      // BOT-6が表示されているかチェック
+      // BOT-6が表示されているときは完全にスワイプ無効化
       if (gameState.activeIndices.bot === 6) {
-        const target = e.target.closest(".rainbow-screen-fullscreen");
-        if (target) {
-          e.stopPropagation();
-        }
+        e.preventDefault();
+        e.stopPropagation();
       }
-    });
+    }, { passive: false });
   }
 
   // ★ イベント委譲 (Event Delegation)
