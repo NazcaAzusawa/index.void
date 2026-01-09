@@ -1,0 +1,160 @@
+/* --- モニター関連 --- */
+
+/* モニター (Mid-13用) - CRTモニター風 */
+.monitor-off,
+.monitor-on,
+.monitor-static {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Courier New", monospace;
+  /* CRTモニター風のベゼルと画面 */
+  background: #050505;
+  border: 4px solid #333;
+  border-radius: 4px;
+  box-shadow: inset 0 0 20px rgba(0,0,0,1), 0 0 0 1px #555;
+  position: relative;
+  overflow: hidden;
+}
+
+/* CRT走査線エフェクト */
+.monitor-off::before,
+.monitor-on::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+              linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.monitor-off {
+  color: #111;
+  text-shadow: none;
+}
+
+.monitor-on {
+  color: #3f3;
+  text-shadow: 0 0 10px #3f3, 0 0 15px rgba(51, 255, 51, 0.5);
+  animation: flicker 0.1s infinite;
+}
+
+/* 砂嵐状態 */
+.monitor-static {
+  background: #1a1a1a;
+}
+
+/* 砂嵐エフェクト */
+.static-noise {
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px);
+  animation: static-animation 0.2s infinite;
+  opacity: 0.8;
+  position: relative;
+  z-index: 5;
+}
+
+/* ランダムなノイズを模倣するアニメーション */
+.static-noise::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    repeating-linear-gradient(
+      0deg, 
+      rgba(255,255,255,0.1) 0px, 
+      transparent 1px, 
+      transparent 2px, 
+      rgba(255,255,255,0.08) 3px
+    );
+  animation: static-shift 0.1s infinite;
+  mix-blend-mode: overlay;
+}
+
+.static-noise::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    repeating-linear-gradient(
+      90deg, 
+      rgba(255,255,255,0.12) 0px, 
+      transparent 1px, 
+      transparent 2px, 
+      rgba(255,255,255,0.06) 3px
+    );
+  animation: static-shift-horizontal 0.15s infinite;
+  mix-blend-mode: overlay;
+}
+
+/* テキストを走査線より前面に */
+#cable-monitor {
+  position: relative;
+  z-index: 20;
+}
+
+@keyframes flicker {
+  0% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes static-animation {
+  0% {
+    opacity: 0.8;
+    filter: brightness(1);
+  }
+  25% {
+    opacity: 0.85;
+    filter: brightness(1.1);
+  }
+  50% {
+    opacity: 0.75;
+    filter: brightness(0.9);
+  }
+  75% {
+    opacity: 0.9;
+    filter: brightness(1.05);
+  }
+  100% {
+    opacity: 0.8;
+    filter: brightness(1);
+  }
+}
+
+@keyframes static-shift {
+  0% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(5px);
+  }
+}
+
+@keyframes static-shift-horizontal {
+  0% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(3px);
+  }
+}

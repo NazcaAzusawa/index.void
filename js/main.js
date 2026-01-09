@@ -8,6 +8,8 @@ const gameState = {
   isMimicCleared: false,
   horizonTimer: 0, // ジャイロの静止時間計測用
   isCablePowered: false, // ケーブルが繋がったかどうかのフラグ
+  cableConnectedTime: 0, // ケーブル接続開始時刻
+  isCableCleared: false, // 5秒経過してクリアしたかどうか
 };
 
 // modules.jsにgameStateの参照を設定
@@ -149,27 +151,40 @@ window.startGyro = startGyro;
 function checkCableConnection() {
   const { top, mid, bot } = gameState.activeIndices;
 
-  // 現在の各段のズレを計算 (20個のループを考慮)
+  // 現在の各段のズレを計算 (40個のループを考慮)
   // 基準: T:3, M:8, B:15 で繋がる
   // つまり、常に以下の関係が維持されていればOK
   // Top = (Mid - 5)
   // Bot = (Mid + 7)
 
-  // JSの % は負の数になることがあるので、+20 してから % 20 する
-  const targetTop = (mid - 5 + 20) % 20;
-  const targetBot = (mid + 7 + 20) % 20;
+  // JSの % は負の数になることがあるので、+40 してから % 40 する
+  const targetTop = (mid - 5 + 40) % 40;
+  const targetBot = (mid + 7 + 40) % 40;
 
   // 現在の位置がターゲットと一致しているか
   const isConnected = top === targetTop && bot === targetBot;
 
   if (isConnected) {
     if (!gameState.isCablePowered) {
+      // 接続開始
       gameState.isCablePowered = true;
+      gameState.cableConnectedTime = Date.now();
+      gameState.isCableCleared = false;
       console.log("CABLE CONNECTED (Internal)");
+    } else if (!gameState.isCableCleared) {
+      // 接続中：5秒経過したかチェック
+      const elapsed = Date.now() - gameState.cableConnectedTime;
+      if (elapsed >= 5000) {
+        gameState.isCableCleared = true;
+        console.log("CABLE CLEARED (5s elapsed)");
+      }
     }
   } else {
     if (gameState.isCablePowered) {
+      // 接続が切れた
       gameState.isCablePowered = false;
+      gameState.isCableCleared = false;
+      gameState.cableConnectedTime = 0;
     }
   }
 
@@ -177,14 +192,18 @@ function checkCableConnection() {
   // ※ checkCableConnectionは常時回っているので、ここでDOM更新してもOK
   const monitor = document.getElementById("cable-monitor");
   if (monitor) {
-    if (gameState.isCablePowered) {
-      // 繋がっていればオンライン表示
-      monitor.className = "monitor-on";
-      monitor.innerHTML = "SYSTEM ONLINE<br>CABLE LINKED";
-    } else {
-      // 切れていればオフライン
+    if (!gameState.isCablePowered) {
+      // 状態1: 切れている（NO SIGNAL）
       monitor.className = "monitor-off";
       monitor.innerHTML = "NO SIGNAL";
+    } else if (!gameState.isCableCleared) {
+      // 状態2: 接続中だが5秒未経過（砂嵐）
+      monitor.className = "monitor-static";
+      monitor.innerHTML = '<div class="static-noise"></div>';
+    } else {
+      // 状態3: 5秒経過してクリア（SYSTEM ONLINE）
+      monitor.className = "monitor-on";
+      monitor.innerHTML = "SYSTEM ONLINE<br>CABLE LINKED";
     }
   }
 }

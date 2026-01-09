@@ -1,7 +1,7 @@
 // js/config.js
 // モジュールの配置情報と定義を一元管理
 
-export const MODULE_COUNT = 20; // 1レーンあたりのモジュール数
+export const MODULE_COUNT = 40; // 1レーンあたりのモジュール数
 
 export const MODULE_CONFIG = {
   // ------------------------------------------------

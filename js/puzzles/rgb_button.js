@@ -1,3 +1,4 @@
+// js/puzzles/rgb_button.js
 // RGBボタン（丸型ボタン）
 
 export function render(config, gameStateRef) {

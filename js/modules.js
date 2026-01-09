@@ -2,11 +2,13 @@ import { MODULE_CONFIG } from "./config.js";
 
 // 各パズルファイルのインポート
 import * as systemPuzzle from "./puzzles/system.js";
-import * as rgbPuzzle from "./puzzles/rgb.js";
+import * as rgbButtonPuzzle from "./puzzles/rgb_button.js"; // RGBボタン
 import * as mimicPuzzle from "./puzzles/mimic.js";
 import * as clipboardPuzzle from "./puzzles/clipboard.js";
-import * as gyroPuzzle from "./puzzles/gyro.js";   // ★ジャイロ＆暗号兼用
-import * as cablePuzzle from "./puzzles/cable.js"; // ★ケーブル＆モニター兼用
+import * as rawDataPuzzle from "./puzzles/raw_data.js";   // ジャイロ生データ（CRTモニター）
+import * as cipherTextPuzzle from "./puzzles/cipher_text.js"; // 暗号テキスト（金属パネル）
+import * as cableSocketPuzzle from "./puzzles/cable_socket.js"; // ケーブルソケット
+import * as monitorPuzzle from "./puzzles/monitor.js"; // モニター
 
 // ゲーム状態を外部から受け取るための参照
 export let gameStateRef = null;
@@ -18,17 +20,17 @@ export function setGameStateRef(state) {
 // config.js の type 名を、実際の js ファイルに割り当てる辞書
 const puzzleMap = {
   system_menu: systemPuzzle,
-  rgb_button: rgbPuzzle,
+  rgb_button: rgbButtonPuzzle,  // RGBボタン（将来的にrgb_display等を追加可能）
   mimic_puzzle: mimicPuzzle,
   clipboard: clipboardPuzzle,
   
-  // ジャイロ系 (どっちも gyro.js へ)
-  raw_data: gyroPuzzle,
-  cipher_text: gyroPuzzle,
+  // 分離: ジャイロ生データと暗号テキスト
+  raw_data: rawDataPuzzle,      // BOT-18: CRTモニター風（再利用可能）
+  cipher_text: cipherTextPuzzle, // BOT-19: 金属パネル風
   
-  // ケーブル系 (どっちも cable.js へ)
-  cable_socket: cablePuzzle,
-  monitor: cablePuzzle,
+  // 分離: ケーブルソケットとモニター
+  cable_socket: cableSocketPuzzle, // T:3, M:8, B:15: ケーブル断面
+  monitor: monitorPuzzle,          // M:13: ケーブル接続監視モニター
 };
 
 // モジュールのHTML生成関数

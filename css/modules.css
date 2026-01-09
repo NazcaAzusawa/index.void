@@ -1,7 +1,9 @@
 /* --- パズルCSSのインポート --- */
 @import url("puzzles/system.css");
-@import url("puzzles/rgb_btn.css");
+@import url("puzzles/rgb_button.css");    /* RGBボタン（将来的にrgb_display等を追加可能） */
 @import url("puzzles/mimic.css");
 @import url("puzzles/parasite.css");
-@import url("puzzles/gyro.css");
-@import url("puzzles/cable.css");
+@import url("puzzles/raw_data.css");      /* ジャイロ生データ（CRTモニター風） */
+@import url("puzzles/cipher_text.css");   /* 暗号テキスト（金属パネル風） */
+@import url("puzzles/cable_socket.css");  /* ケーブルソケット */
+@import url("puzzles/monitor.css");       /* モニター */

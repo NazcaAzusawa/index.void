@@ -43,7 +43,7 @@ export function handleAction(action, config, tier, index, element, gameState, sh
           } else {
             resultEl.style.color = "#f00";
             resultEl.innerText = "INVALID DATA";
-            triggerMorseVibration();
+            // 振動なし（MIMICパズル専用）
           }
         })
         .catch((err) => {
