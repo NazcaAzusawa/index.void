@@ -141,12 +141,10 @@
 }
 
 .achievement-item.unlocked .achievement-icon img {
-  filter: grayscale(100%) brightness(0.6) sepia(100%) hue-rotate(-50deg) saturate(600%);
   animation: destruction 2s ease-out;
 }
 
 .achievement-item.locked .achievement-icon img {
-  filter: brightness(1.2) saturate(150%);
   animation: pulse 3s ease-in-out infinite;
 }
 
