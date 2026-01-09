@@ -9,7 +9,7 @@ export function render(config, gameStateRef) {
     const text = isPowered ? "SYSTEM ONLINE<br>CABLE LINKED" : "NO SIGNAL";
 
     return `
-      <div class="crt-screen ${statusClass}" id="cable-monitor">
+      <div class="${statusClass}" id="cable-monitor">
         ${text}
       </div>
     `;

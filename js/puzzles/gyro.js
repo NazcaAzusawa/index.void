@@ -14,7 +14,7 @@ export function render(config, gameStateRef) {
   // パターンB: ジャイロ生データ (config.type === "raw_data")
   if (config.type === "raw_data") {
     return `
-      <div class="raw-data-panel crt-screen">
+      <div class="raw-data-panel">
         <span id="beta-val" class="raw-val">--.-</span>
       </div>
     `;
