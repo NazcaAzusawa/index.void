@@ -104,14 +104,22 @@ function initLane(laneId, tierName) {
     lane.addEventListener("touchstart", (e) => {
       if (!gameState.isLocked) return;
       
+      // LOCK中はネイティブスクロールを止める
+      e.preventDefault();
+      e.stopPropagation();
+      
       isTouching = true;
       hasMoved = false;
       touchStartX = e.touches[0].clientX;
       scrollStartPos = lane.scrollLeft;
-    }, { passive: true });
+    }, { passive: false }); // passiveをfalseに
     
     lane.addEventListener("touchmove", (e) => {
       if (!gameState.isLocked || !isTouching) return;
+      
+      // LOCK中はネイティブスクロールを止める
+      e.preventDefault();
+      e.stopPropagation();
       
       hasMoved = true;
       const touchCurrentX = e.touches[0].clientX;
@@ -125,9 +133,9 @@ function initLane(laneId, tierName) {
       if (botLane) {
         botLane.scrollLeft = newScrollPos;
       }
-    }, { passive: true });
+    }, { passive: false }); // passiveをfalseに
     
-    lane.addEventListener("touchend", () => {
+    lane.addEventListener("touchend", (e) => {
       if (!gameState.isLocked || !isTouching) return;
       
       isTouching = false;
@@ -163,7 +171,7 @@ function initLane(laneId, tierName) {
           }, 300);
         }, 50);
       }
-    }, { passive: true });
+    });
   }
   
   // BOT-6でタッチイベントを吸収してスワイプを無効化
