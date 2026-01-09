@@ -12,6 +12,9 @@ import * as monitorPuzzle from "./puzzles/monitor.js"; // モニター
 import * as keypadPuzzle from "./puzzles/keypad.js"; // テンキー
 import * as tapDistancePuzzle from "./puzzles/tap_distance.js"; // タップ距離モニター
 import * as audioLevelPuzzle from "./puzzles/audio_level.js"; // 音声レベルモニター
+import * as ballMonitorPuzzle from "./puzzles/ball_monitor.js"; // ボールモニター
+import * as lockMechanismPuzzle from "./puzzles/lock_mechanism.js"; // ロック機構
+import * as rainbowScreenPuzzle from "./puzzles/rainbow_screen.js"; // 虹色タッチスクリーン
 
 // ゲーム状態を外部から受け取るための参照
 export let gameStateRef = null;
@@ -39,6 +42,11 @@ const puzzleMap = {
   keypad: keypadPuzzle,           // テンキー
   tap_distance: tapDistancePuzzle, // タップ距離モニター
   audio_level: audioLevelPuzzle,   // 音声レベルモニター
+  
+  // 新規モジュール（見た目のみ）
+  ball_monitor: ballMonitorPuzzle,     // ボールモニター
+  lock_mechanism: lockMechanismPuzzle, // ロック機構
+  rainbow_screen: rainbowScreenPuzzle, // 虹色タッチスクリーン
 };
 
 // モジュールのHTML生成関数

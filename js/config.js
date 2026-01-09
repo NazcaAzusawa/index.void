@@ -56,4 +56,11 @@ export const MODULE_CONFIG = {
   "bot-5": { type: "keypad" },          // テンキー
   "mid-5": { type: "tap_distance" },    // タップ距離モニター
   "top-5": { type: "audio_level" },     // 音声レベルモニター
+  
+  // ------------------------------------------------
+  // 新規モジュール（見た目のみ）
+  // ------------------------------------------------
+  "top-6": { type: "ball_monitor" },    // ボールモニター（緑色）
+  "mid-6": { type: "lock_mechanism" },  // ロック機構
+  "bot-6": { type: "rainbow_screen" },  // 虹色タッチスクリーン
 };
