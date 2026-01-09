@@ -1,6 +1,9 @@
-/* --- 虹色タッチスクリーン（全面） --- */
+/* --- 虹色タッチスクリーン（完全全面：ネジもラベルも覆う） --- */
 
-.rainbow-screen {
+.rainbow-screen-fullscreen {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background: linear-gradient(
@@ -14,9 +17,9 @@
     rgba(100, 40, 180, 0.2) 85%,
     rgba(180, 40, 40, 0.2) 100%
   );
-  border: 3px solid #222;
   border-radius: 4px;
   box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 0 10px rgba(255,255,255,0.1);
-  position: relative;
-  touch-action: none; /* タッチイベントを完全に制御 */
+  z-index: 1000; /* ネジやラベルより上 */
+  touch-action: none;
+  pointer-events: auto; /* タッチを受け付ける */
 }

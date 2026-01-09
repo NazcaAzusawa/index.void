@@ -2,8 +2,9 @@
 // 虹色グラデーションのタッチスクリーン（壁のコントローラー）
 
 export function render(config, gameStateRef) {
+  // 全面を覆うタッチスクリーン（plateの外側に配置）
   return `
-    <div class="rainbow-screen" id="rainbow-screen-bot-6" data-action="touchScreen">
+    <div class="rainbow-screen-fullscreen" id="rainbow-screen-bot-6">
     </div>
   `;
 }
@@ -24,9 +25,9 @@ export function initTouchControl(gameState) {
   let isTouching = false;
   let touchStartX = 0;
   
-  // タッチ開始
+  // タッチ開始（passiveなし、preventDefaultもなし）
   screen.addEventListener("touchstart", (e) => {
-    e.preventDefault();
+    e.stopPropagation(); // 親要素への伝播を止める
     isTouching = true;
     
     const touch = e.touches[0];
@@ -37,11 +38,11 @@ export function initTouchControl(gameState) {
     // 壁をワープ
     gameState.wallX = Math.max(0, Math.min(100, percentX));
     touchStartX = percentX;
-  }, { passive: false });
+  });
   
   // タッチ移動（スワイプ）
   screen.addEventListener("touchmove", (e) => {
-    e.preventDefault();
+    e.stopPropagation(); // 親要素への伝播を止める
     if (!isTouching) return;
     
     const touch = e.touches[0];
@@ -51,13 +52,13 @@ export function initTouchControl(gameState) {
     
     // 壁を指に追従
     gameState.wallX = Math.max(0, Math.min(100, percentX));
-  }, { passive: false });
+  });
   
   // タッチ終了
   screen.addEventListener("touchend", (e) => {
-    e.preventDefault();
+    e.stopPropagation(); // 親要素への伝播を止める
     isTouching = false;
-  }, { passive: false });
+  });
   
   // 初期位置を中央に設定
   gameState.wallX = 50;
