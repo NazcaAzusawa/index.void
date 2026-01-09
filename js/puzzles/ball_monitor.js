@@ -53,35 +53,19 @@ export function initPhysics() {
     }
   });
   
-  // 境界壁（画面外に出たことを検知するため、画面外に配置）
-  const boundaryThickness = 50;
-  const leftBoundary = Bodies.rectangle(-boundaryThickness, height / 2, boundaryThickness * 2, height * 3, {
-    isStatic: true,
-    render: { visible: false }
-  });
-  const rightBoundary = Bodies.rectangle(width + boundaryThickness, height / 2, boundaryThickness * 2, height * 3, {
-    isStatic: true,
-    render: { visible: false }
-  });
-  const topBoundary = Bodies.rectangle(width / 2, -boundaryThickness, width * 3, boundaryThickness * 2, {
-    isStatic: true,
-    render: { visible: false }
-  });
-  const bottomBoundary = Bodies.rectangle(width / 2, height + boundaryThickness, width * 3, boundaryThickness * 2, {
-    isStatic: true,
-    render: { visible: false }
-  });
+  // 境界壁なし（画面外に自由に出られる）
   
-  boundaries.push(leftBoundary, rightBoundary, topBoundary, bottomBoundary);
-  World.add(matterEngine.world, boundaries);
-  
-  // 可動壁（中央、縦長、薄い）
-  wall = Bodies.rectangle(width / 2, height / 2, 3, height, {
-    isStatic: true,
+  // 可動壁（中央、縦長、薄い）- kinematicに変更して速度を持てるようにする
+  wall = Bodies.rectangle(width / 2, height / 2, 5, height * 2, {
+    isStatic: false,
+    density: 100, // 重い
+    friction: 0,
+    frictionAir: 1, // 空気抵抗を最大にして即座に止まる
+    restitution: 0,
     render: {
-      fillStyle: 'transparent', // 透明
-      strokeStyle: 'transparent',
-      lineWidth: 0
+      fillStyle: 'rgba(255, 0, 0, 0.3)', // デバッグ用に赤で表示
+      strokeStyle: '#ff0000',
+      lineWidth: 1
     }
   });
   World.add(matterEngine.world, wall);
@@ -90,10 +74,11 @@ export function initPhysics() {
   for (let i = 0; i < 20; i++) {
     const x = Math.random() * (width - 40) + 20;
     const y = Math.random() * (height - 40) + 20;
-    const ball = Bodies.circle(x, y, 4, {
-      restitution: 0.8, // 反発係数
+    const ball = Bodies.circle(x, y, 6, {
+      restitution: 0.6, // 反発係数
       friction: 0.01,
-      density: 0.001,
+      frictionAir: 0.01, // 空気抵抗を低く
+      density: 0.01,
       render: {
         fillStyle: '#44ff44',
         strokeStyle: '#00aa00',
@@ -113,6 +98,8 @@ export function initPhysics() {
   console.log("Matter.js physics initialized for ball monitor");
 }
 
+let lastWallX = null;
+
 // 物理演算の更新（main.jsから呼び出す）
 export function updatePhysics(gameState) {
   if (!matterEngine || !wall || !isPhysicsRunning) return;
@@ -127,24 +114,38 @@ export function updatePhysics(gameState) {
   if (gameState.wallX !== null) {
     const targetX = (gameState.wallX / 100) * width;
     const { Body } = window.Matter;
-    Body.setPosition(wall, { x: targetX, y: height / 2 });
+    
+    // 壁を移動（速度を持たせて押す）
+    if (lastWallX !== null) {
+      const velocityX = (targetX - lastWallX) * 2; // 速度を2倍に
+      Body.setVelocity(wall, { x: velocityX, y: 0 });
+    }
+    
+    Body.setPosition(wall, { x: targetX, y: height });
+    lastWallX = targetX;
   }
   
-  // 画面外に出たボールをチェック
+  // 画面外に出たボールをチェック（画面サイズより大きく離れたら）
   let allOut = true;
+  let remainingCount = 0;
   for (const ball of balls) {
     const pos = ball.position;
-    // 画面内にあるかチェック（余裕を持たせる）
-    if (pos.x > -20 && pos.x < width + 20 && pos.y > -20 && pos.y < height + 20) {
+    // 画面内にあるかチェック（広めの範囲）
+    if (pos.x > -100 && pos.x < width + 100 && pos.y > -100 && pos.y < height + 100) {
       allOut = false;
-      break;
+      remainingCount++;
     }
   }
   
+  // デバッグ用（残りのボール数を表示）
+  if (remainingCount > 0 && remainingCount < 20) {
+    console.log(`Remaining balls: ${remainingCount}`);
+  }
+  
   // 全ボールが画面外に出たらクリア
-  if (allOut && !gameState.isBallPuzzleCleared) {
+  if (allOut && balls.length > 0 && !gameState.isBallPuzzleCleared) {
     gameState.isBallPuzzleCleared = true;
-    console.log("BALL PUZZLE CLEARED!");
+    console.log("🎉 BALL PUZZLE CLEARED! 🎉");
     // クリア演出（必要なら）
   }
 }
