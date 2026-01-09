@@ -227,6 +227,18 @@ const observer = new IntersectionObserver(
         const index = parseInt(entry.target.dataset.index);
         gameState.activeIndices[tier] = index;
         debugEls[tier].innerText = index;
+        
+        // TOP-5 (音声レベルモニター) が表示されたらマイク監視を開始
+        if (tier === "top" && index === 5) {
+          startAudioMonitoring();
+        }
+      } else {
+        // TOP-5 が非表示になったらマイク監視を停止
+        const tier = entry.target.dataset.tier;
+        const index = parseInt(entry.target.dataset.index);
+        if (tier === "top" && index === 5) {
+          stopAudioMonitoring();
+        }
       }
     });
   },
@@ -263,7 +275,7 @@ document.addEventListener("touchend", (e) => {
   updateTapDistance(e);
 });
 
-// タップ距離計算（画面中心からの距離）
+// タップ距離計算（画面中心からの距離をパーセンテージで）
 function updateTapDistance(e) {
   const tapDistanceVal = document.getElementById("tap-distance-val");
   if (!tapDistanceVal) return;
@@ -273,17 +285,25 @@ function updateTapDistance(e) {
   const x = touch.clientX;
   const y = touch.clientY;
   
-  // 画面中心を計算
-  const centerX = window.innerWidth / 2;
-  const centerY = window.innerHeight / 2;
+  // 画面サイズを取得
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
   
-  // 中心からの距離（|x| + |y|）
+  // 画面中心を計算
+  const centerX = screenWidth / 2;
+  const centerY = screenHeight / 2;
+  
+  // 中心からの距離をピクセルで計算
   const distanceX = Math.abs(x - centerX);
   const distanceY = Math.abs(y - centerY);
-  const totalDistance = distanceX + distanceY;
   
-  // 表示（小数点1桁）
-  tapDistanceVal.innerText = totalDistance.toFixed(1);
+  // 画面サイズに対するパーセンテージに変換
+  const percentX = (distanceX / screenWidth) * 100;
+  const percentY = (distanceY / screenHeight) * 100;
+  
+  // 合計（小数点1桁）
+  const totalPercent = percentX + percentY;
+  tapDistanceVal.innerText = totalPercent.toFixed(1);
 }
 
 // クリックイベントにも対応（PC用）
@@ -293,26 +313,43 @@ document.addEventListener("click", updateTapDistance);
 let audioContext = null;
 let analyser = null;
 let microphone = null;
+let gainNode = null;
 let dataArray = null;
+let audioStream = null;
+let audioUpdateInterval = null;
+let isAudioMonitoring = false;
 
 async function startAudioMonitoring() {
+  if (isAudioMonitoring) return; // 既に動作中なら何もしない
+  
   try {
     // マイク許可を取得
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     
     // Web Audio API のセットアップ
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioContext.createAnalyser();
-    microphone = audioContext.createMediaStreamSource(stream);
+    microphone = audioContext.createMediaStreamSource(audioStream);
+    gainNode = audioContext.createGain();
     
-    analyser.fftSize = 256;
+    // 感度を高く設定
+    gainNode.gain.value = 5.0; // 5倍に増幅（感度高）
+    
+    // アナライザーの設定
+    analyser.fftSize = 512; // より精細に
+    analyser.smoothingTimeConstant = 0.3; // 反応を速く（0~1、低いほど敏感）
+    analyser.minDecibels = -90;
+    analyser.maxDecibels = -10;
+    
     const bufferLength = analyser.frequencyBinCount;
     dataArray = new Uint8Array(bufferLength);
     
-    microphone.connect(analyser);
+    // マイク → ゲイン → アナライザー
+    microphone.connect(gainNode);
+    gainNode.connect(analyser);
     
     // 定期的に音量レベルを更新
-    setInterval(() => {
+    audioUpdateInterval = setInterval(() => {
       const audioLevelVal = document.getElementById("audio-level-val");
       if (!audioLevelVal) return;
       
@@ -325,14 +362,15 @@ async function startAudioMonitoring() {
       }
       const average = sum / bufferLength;
       
-      // 0-255を0-100にマッピング
-      const level = (average / 255) * 100;
+      // 0-255を0-50にマッピング
+      const level = (average / 255) * 50;
       
       // 表示（小数点1桁）
       audioLevelVal.innerText = level.toFixed(1);
     }, 100);
     
-    console.log("Audio monitoring started");
+    isAudioMonitoring = true;
+    console.log("Audio monitoring started (High sensitivity, 0-50 range)");
   } catch (err) {
     console.error("Audio monitoring failed:", err);
     const audioLevelVal = document.getElementById("audio-level-val");
@@ -342,7 +380,32 @@ async function startAudioMonitoring() {
   }
 }
 
-// 自動でマイク監視を開始
-setTimeout(() => {
-  startAudioMonitoring();
-}, 1000);
+function stopAudioMonitoring() {
+  if (!isAudioMonitoring) return; // 動作していなければ何もしない
+  
+  // インターバルを停止
+  if (audioUpdateInterval) {
+    clearInterval(audioUpdateInterval);
+    audioUpdateInterval = null;
+  }
+  
+  // Audio Contextをクローズ
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
+  }
+  
+  // ストリームを停止
+  if (audioStream) {
+    audioStream.getTracks().forEach(track => track.stop());
+    audioStream = null;
+  }
+  
+  analyser = null;
+  microphone = null;
+  gainNode = null;
+  dataArray = null;
+  isAudioMonitoring = false;
+  
+  console.log("Audio monitoring stopped");
+}
