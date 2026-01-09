@@ -9,7 +9,7 @@ export async function requestAllPermissions() {
     camera: false,
     clipboard: false,
     notification: false,
-    bluetooth: false,
+    geolocation: false,
     nfc: false,
     vibration: false
   };
@@ -79,29 +79,28 @@ export async function requestAllPermissions() {
     messages.push(`Notification: Failed - ${err.message}`);
   }
   
-  // 6. Bluetooth
+  // 6. 位置情報
   try {
-    if ('bluetooth' in navigator) {
-      // Bluetoothデバイスを要求（ユーザーがキャンセルする可能性あり）
-      try {
-        await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: [] // 全てのサービスを許可
-        });
-        results.bluetooth = true;
-        messages.push('Bluetooth: Granted');
-      } catch (err) {
-        if (err.name === 'NotFoundError') {
-          messages.push('Bluetooth: No device selected (cancelled)');
-        } else {
-          messages.push(`Bluetooth: ${err.message}`);
-        }
-      }
+    if ('geolocation' in navigator) {
+      await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            results.geolocation = true;
+            messages.push(`Geolocation: Granted (${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)})`);
+            resolve();
+          },
+          (error) => {
+            messages.push(`Geolocation: ${error.message}`);
+            reject(error);
+          },
+          { timeout: 10000 }
+        );
+      });
     } else {
-      messages.push('Bluetooth: Not supported');
+      messages.push('Geolocation: Not supported');
     }
   } catch (err) {
-    messages.push(`Bluetooth: Failed - ${err.message}`);
+    // エラーは既にmessagesに追加済み
   }
   
   // 7. NFC
@@ -161,7 +160,7 @@ export function showPermissionWindow() {
           • カメラ（将来の機能用）<br>
           • クリップボード（データ操作）<br>
           • 通知（イベント通知）<br>
-          • Bluetooth（デバイス連携）<br>
+          • 位置情報（座標取得）<br>
           • NFC（近距離通信）<br>
           • 振動（ハプティックフィードバック）<br>
         </div>
