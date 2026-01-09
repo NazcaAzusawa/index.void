@@ -65,6 +65,13 @@ export const ACHIEVEMENTS = [
     module: "TOP-8",
     flavor: "「紫—それは赤と青が交わる境界、現実と虚構が混ざり合う色。センサーが紫を検知した瞬間、スペクトルの秩序が乱れた。この色は本来この世界に存在してはならない。あなたは禁じられた波長を解き放った。」",
     flag: "isColorPurpleCleared"
+  },
+  {
+    id: "maze",
+    name: "LABYRINTH NAVIGATOR",
+    module: "TOP-9",
+    flavor: "「迷路は意思を持たない。しかしあなたは重力を操り、世界を傾け、唯一の出口へと導かれた。壁にぶつかり続けることで、ようやく真実の道が見えた。この世界に真の自由はない—全ては決められた経路の上を滑っているだけだ。」",
+    flag: "isMazeCleared"
   }
 ];
 

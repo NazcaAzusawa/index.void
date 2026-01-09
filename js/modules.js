@@ -18,6 +18,7 @@ import * as rainbowScreenPuzzle from "./puzzles/rainbow_screen.js"; // 虹色タ
 import * as faceCameraPuzzle from "./puzzles/face_camera.js"; // 顔カメラ
 import * as unhappyPanelPuzzle from "./puzzles/unhappy_panel.js"; // UNHAPPYパネル
 import * as colorCameraPuzzle from "./puzzles/color_camera.js"; // カラーボーダー＋カメラ
+import * as mazePuzzle from "./puzzles/maze.js"; // 傾き迷路パズル
 
 // ゲーム状態を外部から受け取るための参照
 export let gameStateRef = null;
@@ -57,6 +58,9 @@ const puzzleMap = {
   
   // カラーボーダー＋カメラモジュール
   color_camera: colorCameraPuzzle,     // カラーボーダー＋アウトカメラ
+  
+  // 迷路パズル
+  maze: mazePuzzle,                    // 傾き迷路パズル
 };
 
 // モジュールのHTML生成関数

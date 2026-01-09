@@ -4,6 +4,7 @@ import * as ballMonitor from "./puzzles/ball_monitor.js";
 import * as rainbowScreen from "./puzzles/rainbow_screen.js";
 import * as faceCamera from "./puzzles/face_camera.js";
 import * as colorCamera from "./puzzles/color_camera.js";
+import * as maze from "./puzzles/maze.js";
 import { openAchievements } from "./achievements.js";
 
 // --- STATE MANAGEMENT (脳) ---
@@ -24,6 +25,7 @@ const gameState = {
   isTripleZeroCleared: false, // TOP5/MID5/BOT18が全て0で5秒
   isSmileCleared: false, // 笑顔検出クリア
   isColorPurpleCleared: false, // 紫色検出クリア
+  isMazeCleared: false, // 迷路パズルクリア
 };
 
 // modules.jsにgameStateの参照を設定
@@ -193,37 +195,79 @@ function initLane(laneId, tierName) {
     });
   }
   
-  // BOT-6でスワイプを完全に無効化
+  // BOT-6でスワイプを完全に無効化（スクロールが止まった時点で判定）
   if (tierName === "bot") {
-    let bot6FixedPosition = null;
+    let lastScrollLeft = lane.scrollLeft;
+    let lastScrollTime = Date.now();
+    let scrollCheckInterval = null;
+    let isBot6Locked = false;
     
-    // scrollイベントでスクロール位置を固定
+    // スクロールが完全に止まったことを検出（慣性スクロール中は無視）
     lane.addEventListener("scroll", () => {
       // ロック中は通常のスクロールを許可
       if (gameState.isLocked) return;
       
-      // BOT-6が表示されているときは完全にスクロール無効化
-      if (gameState.activeIndices.bot === 6) {
-        if (bot6FixedPosition === null) {
+      // 既にBOT-6でロックされている場合はスクロールを防ぐ
+      if (isBot6Locked) {
+        const module6 = lane.querySelector(`.module[data-index="6"]`);
+        if (module6) {
+          lane.scrollLeft = module6.offsetLeft;
+        }
+        return;
+      }
+      
+      // スクロール位置と時刻を更新
+      lastScrollLeft = lane.scrollLeft;
+      lastScrollTime = Date.now();
+      
+      // 既存のチェックインターバルをクリア
+      if (scrollCheckInterval) {
+        clearInterval(scrollCheckInterval);
+      }
+      
+      // スクロール位置が変化しなくなったかチェック（慣性スクロール終了を検出）
+      scrollCheckInterval = setInterval(() => {
+        const currentScrollLeft = lane.scrollLeft;
+        const currentTime = Date.now();
+        
+        // スクロール位置が変化していない = 完全に止まった
+        if (currentScrollLeft === lastScrollLeft && currentTime - lastScrollTime > 50) {
+          // インターバルを停止
+          clearInterval(scrollCheckInterval);
+          scrollCheckInterval = null;
+          
+          // スクロールが止まった時点でBOT-6が表示されているかチェック
           const module6 = lane.querySelector(`.module[data-index="6"]`);
           if (module6) {
-            bot6FixedPosition = module6.offsetLeft;
+            const moduleRect = module6.getBoundingClientRect();
+            const laneRect = lane.getBoundingClientRect();
+            
+            // BOT-6が完全に表示されているか（中央に来ているか）
+            const isBot6Visible = moduleRect.left >= laneRect.left && 
+                                   moduleRect.right <= laneRect.right &&
+                                   Math.abs(moduleRect.left - laneRect.left) < 50; // 中央付近
+            
+            if (isBot6Visible) {
+              // BOT-6が表示されているのでスクロールをロック
+              isBot6Locked = true;
+              lane.classList.add("no-scroll");
+              console.log("BOT-6 locked: scroll disabled");
+            }
           }
+        } else {
+          // スクロール位置が変化している = まだ慣性スクロール中
+          lastScrollLeft = currentScrollLeft;
+          lastScrollTime = currentTime;
         }
-        if (bot6FixedPosition !== null) {
-          lane.scrollLeft = bot6FixedPosition;
-        }
-      } else {
-        bot6FixedPosition = null;
-      }
+      }, 50); // 50msごとにチェック
     }, { passive: true });
     
     lane.addEventListener("touchstart", (e) => {
       // ロック中は通常のスワイプを許可
       if (gameState.isLocked) return;
       
-      // BOT-6が表示されているときは完全にスワイプ無効化
-      if (gameState.activeIndices.bot === 6) {
+      // BOT-6がロックされているときは完全にスワイプ無効化
+      if (isBot6Locked) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -233,8 +277,8 @@ function initLane(laneId, tierName) {
       // ロック中は通常のスワイプを許可
       if (gameState.isLocked) return;
       
-      // BOT-6が表示されているときは完全にスワイプ無効化
-      if (gameState.activeIndices.bot === 6) {
+      // BOT-6がロックされているときは完全にスワイプ無効化
+      if (isBot6Locked) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -244,12 +288,32 @@ function initLane(laneId, tierName) {
       // ロック中は通常のスワイプを許可
       if (gameState.isLocked) return;
       
-      // BOT-6が表示されているときは完全にスワイプ無効化
-      if (gameState.activeIndices.bot === 6) {
+      // BOT-6がロックされているときは完全にスワイプ無効化
+      if (isBot6Locked) {
         e.preventDefault();
         e.stopPropagation();
       }
     }, { passive: false });
+    
+    // BOT-6が非表示になったらロックを解除
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.target.dataset.index === "6") {
+          if (!entry.isIntersecting) {
+            // BOT-6が非表示になったらロック解除
+            isBot6Locked = false;
+            lane.classList.remove("no-scroll");
+            console.log("BOT-6 unlocked: scroll enabled");
+          }
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    // BOT-6モジュールを監視
+    const module6 = lane.querySelector(`.module[data-index="6"]`);
+    if (module6) {
+      observer.observe(module6);
+    }
   }
 
   // ★ イベント委譲 (Event Delegation)
@@ -419,12 +483,6 @@ const observer = new IntersectionObserver(
         
         // BOT-6 (虹色タッチスクリーン) が表示されたらタッチコントロールを初期化
         if (tier === "bot" && index === 6) {
-          // BOTレーンにno-scrollクラスを追加
-          const botLane = document.getElementById("lane-bot");
-          if (botLane) {
-            botLane.classList.add("no-scroll");
-          }
-          
           setTimeout(() => {
             rainbowScreen.initTouchControl(gameState);
           }, 100);
@@ -441,6 +499,13 @@ const observer = new IntersectionObserver(
         if (tier === "top" && index === 8) {
           setTimeout(() => {
             colorCamera.initBackCamera(gameState);
+          }, 100);
+        }
+        
+        // TOP-9 (迷路パズル) が表示されたら傾きセンサーを起動
+        if (tier === "top" && index === 9) {
+          setTimeout(() => {
+            maze.initMaze(gameState);
           }, 100);
         }
       } else {
@@ -466,13 +531,11 @@ const observer = new IntersectionObserver(
           colorCamera.stopBackCamera();
         }
         
-        // BOT-6 が非表示になったらno-scrollクラスを削除
-        if (tier === "bot" && index === 6) {
-          const botLane = document.getElementById("lane-bot");
-          if (botLane) {
-            botLane.classList.remove("no-scroll");
-          }
+        // TOP-9 が非表示になったら迷路パズルを停止
+        if (tier === "top" && index === 9) {
+          maze.stopMaze();
         }
+        
       }
     });
   },
