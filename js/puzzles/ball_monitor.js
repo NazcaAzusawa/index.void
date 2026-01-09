@@ -55,7 +55,7 @@ export function initPhysics() {
   
   // 境界壁なし（画面外に自由に出られる）
   
-  // 可動壁（中央、縦長、薄い）- kinematicに変更して速度を持てるようにする
+  // 可動壁（中央、縦長、薄い、透明）
   wall = Bodies.rectangle(width / 2, height / 2, 5, height * 2, {
     isStatic: false,
     density: 100, // 重い
@@ -63,9 +63,9 @@ export function initPhysics() {
     frictionAir: 1, // 空気抵抗を最大にして即座に止まる
     restitution: 0,
     render: {
-      fillStyle: 'rgba(255, 0, 0, 0.3)', // デバッグ用に赤で表示
-      strokeStyle: '#ff0000',
-      lineWidth: 1
+      fillStyle: 'transparent',
+      strokeStyle: 'transparent',
+      lineWidth: 0
     }
   });
   World.add(matterEngine.world, wall);
@@ -110,9 +110,9 @@ export function updatePhysics(gameState) {
   const width = container.offsetWidth;
   const height = container.offsetHeight;
   
-  // BOT-6からの壁の位置を取得（パーセンテージ）
+  // BOT-6からの壁の位置を取得（絶対座標・ピクセル値）
   if (gameState.wallX !== null) {
-    const targetX = (gameState.wallX / 100) * width;
+    const targetX = gameState.wallX; // 絶対座標をそのまま使用
     const { Body } = window.Matter;
     
     // 壁を移動（速度を持たせて押す）

@@ -5,6 +5,7 @@ export function render(config, gameStateRef) {
   // 全面を覆うタッチスクリーン（plateの外側に配置）
   return `
     <div class="rainbow-screen-fullscreen" id="rainbow-screen-bot-6">
+      <div class="wall-indicator" id="wall-indicator-bot-6"></div>
     </div>
   `;
 }
@@ -20,48 +21,52 @@ export function handleAction(action, config, tier, index, element, gameState, sh
 // タッチイベントの初期化（main.jsから呼び出す）
 export function initTouchControl(gameState) {
   const screen = document.getElementById("rainbow-screen-bot-6");
-  if (!screen) return;
+  const indicator = document.getElementById("wall-indicator-bot-6");
+  if (!screen || !indicator) return;
   
   let isTouching = false;
-  let touchStartX = 0;
   
-  // タッチ開始（passiveなし、preventDefaultもなし）
+  // 壁の位置を更新する関数
+  const updateWallPosition = (clientX) => {
+    const rect = screen.getBoundingClientRect();
+    const x = clientX - rect.left; // スクリーン内の相対X座標（ピクセル）
+    
+    // 絶対座標として保存（画面の絶対X座標）
+    gameState.wallX = clientX;
+    
+    // インジケーターの位置を更新（スクリーン内の相対位置）
+    indicator.style.left = `${x}px`;
+    indicator.style.transform = 'translateX(-50%)';
+  };
+  
+  // タッチ開始
   screen.addEventListener("touchstart", (e) => {
-    e.stopPropagation(); // 親要素への伝播を止める
+    e.stopPropagation();
     isTouching = true;
     
     const touch = e.touches[0];
-    const rect = screen.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const percentX = (x / rect.width) * 100;
-    
-    // 壁をワープ
-    gameState.wallX = Math.max(0, Math.min(100, percentX));
-    touchStartX = percentX;
+    updateWallPosition(touch.clientX);
   });
   
   // タッチ移動（スワイプ）
   screen.addEventListener("touchmove", (e) => {
-    e.stopPropagation(); // 親要素への伝播を止める
+    e.stopPropagation();
     if (!isTouching) return;
     
     const touch = e.touches[0];
-    const rect = screen.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const percentX = (x / rect.width) * 100;
-    
-    // 壁を指に追従
-    gameState.wallX = Math.max(0, Math.min(100, percentX));
+    updateWallPosition(touch.clientX);
   });
   
   // タッチ終了
   screen.addEventListener("touchend", (e) => {
-    e.stopPropagation(); // 親要素への伝播を止める
+    e.stopPropagation();
     isTouching = false;
   });
   
-  // 初期位置を中央に設定
-  gameState.wallX = 50;
+  // 初期位置を中央に設定（画面の中央の絶対座標）
+  const rect = screen.getBoundingClientRect();
+  gameState.wallX = rect.left + rect.width / 2;
+  indicator.style.left = '50%';
   
   console.log("Rainbow screen touch control initialized");
 }

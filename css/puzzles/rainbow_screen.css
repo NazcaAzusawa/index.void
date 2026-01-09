@@ -23,3 +23,17 @@
   touch-action: none;
   pointer-events: auto; /* タッチを受け付ける */
 }
+
+/* 壁の位置を示す白い線 */
+.wall-indicator {
+  position: absolute;
+  top: 0;
+  left: 50%; /* 初期位置は中央 */
+  width: 3px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  pointer-events: none; /* タッチイベントを通過 */
+  transition: left 0.05s linear;
+  transform: translateX(-50%);
+}
