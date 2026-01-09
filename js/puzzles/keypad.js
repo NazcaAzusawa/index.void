@@ -4,6 +4,7 @@
 export function render(config, gameStateRef) {
   return `
     <div class="keypad-container">
+      <div class="keypad-display" id="keypad-display">----</div>
       <div class="keypad-grid">
         <button class="key-btn" data-action="keyPress" data-key="1">1</button>
         <button class="key-btn" data-action="keyPress" data-key="2">2</button>
@@ -18,7 +19,6 @@ export function render(config, gameStateRef) {
         <button class="key-btn" data-action="keyPress" data-key="0">0</button>
         <button class="key-btn key-special" data-action="keyPress" data-key="#">#</button>
       </div>
-      <div class="keypad-display" id="keypad-display">----</div>
     </div>
   `;
 }
