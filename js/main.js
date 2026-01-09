@@ -340,10 +340,11 @@ const observer = new IntersectionObserver(
           startAudioMonitoring();
         }
         
-        // TOP-6 (ボールモニター) が表示されたら物理演算を開始
+        // TOP-6 (ボールモニター) が表示されたら物理演算を開始/再開
         if (tier === "top" && index === 6) {
           setTimeout(() => {
-            ballMonitor.initPhysics();
+            ballMonitor.initPhysics(); // 初回のみ初期化
+            ballMonitor.resumePhysics(); // 2回目以降は再開
           }, 100);
         }
         

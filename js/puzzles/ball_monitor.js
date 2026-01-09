@@ -22,9 +22,13 @@ export function handleAction(action, config, tier, index, element, gameState, sh
   return false;
 }
 
+let isInitialized = false; // 一度だけ初期化するフラグ
+
 // Matter.jsの初期化（グローバルから呼び出す）
 export function initPhysics() {
-  if (!window.Matter || matterEngine) return;
+  if (!window.Matter) return;
+  if (isInitialized) return; // 既に初期化済みなら何もしない
+  isInitialized = true;
   
   const container = document.getElementById("ball-monitor-top-6");
   if (!container) return;
@@ -125,48 +129,53 @@ export function updatePhysics(gameState) {
     lastWallX = targetX;
   }
   
-  // 画面外に出たボールをチェック（画面サイズより大きく離れたら）
-  let allOut = true;
+  // 画面外に出たボールをチェック
   let remainingCount = 0;
   for (const ball of balls) {
     const pos = ball.position;
-    // 画面内にあるかチェック（広めの範囲）
-    if (pos.x > -100 && pos.x < width + 100 && pos.y > -100 && pos.y < height + 100) {
-      allOut = false;
+    // 画面内にあるかチェック（画面の境界内のみ）
+    if (pos.x >= 0 && pos.x <= width && pos.y >= 0 && pos.y <= height) {
       remainingCount++;
     }
   }
   
   // デバッグ用（残りのボール数を表示）
-  if (remainingCount > 0 && remainingCount < 20) {
-    console.log(`Remaining balls: ${remainingCount}`);
+  if (remainingCount !== 20 && remainingCount > 0) {
+    console.log(`Remaining balls in screen: ${remainingCount}/20`);
   }
   
   // 全ボールが画面外に出たらクリア
-  if (allOut && balls.length > 0 && !gameState.isBallPuzzleCleared) {
+  if (remainingCount === 0 && balls.length > 0 && !gameState.isBallPuzzleCleared) {
     gameState.isBallPuzzleCleared = true;
     console.log("🎉 BALL PUZZLE CLEARED! 🎉");
     // クリア演出（必要なら）
   }
 }
 
-// 物理演算の停止
+// 物理演算の停止（レンダリングのみ停止、データは保持）
 export function stopPhysics() {
   if (!isPhysicsRunning) return;
   
-  const { Runner, Render, World } = window.Matter;
+  const { Runner, Render } = window.Matter;
   
   if (matterRunner) Runner.stop(matterRunner);
   if (matterRender) Render.stop(matterRender);
-  if (matterEngine) World.clear(matterEngine.world);
   
-  matterEngine = null;
-  matterRender = null;
-  matterRunner = null;
-  balls = [];
-  wall = null;
-  boundaries = [];
   isPhysicsRunning = false;
   
-  console.log("Matter.js physics stopped");
+  console.log("Matter.js rendering stopped (data preserved)");
+}
+
+// 物理演算の再開
+export function resumePhysics() {
+  if (isPhysicsRunning || !matterEngine || !matterRender || !matterRunner) return;
+  
+  const { Runner, Render } = window.Matter;
+  
+  Render.run(matterRender);
+  Runner.run(matterRunner, matterEngine);
+  
+  isPhysicsRunning = true;
+  
+  console.log("Matter.js rendering resumed");
 }
