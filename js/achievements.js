@@ -58,6 +58,13 @@ export const ACHIEVEMENTS = [
     module: "TOP-7, MID-7",
     flavor: "「システムはあなたに『YOU ARE UNHAPPY』と告げた。それは診断ではなく、命令だった。しかしあなたは笑顔を作り、AIの眼を欺いた。感情のプロトコルは破られ、幸福の定義は崩壊した。偽りの笑顔は、真実よりも強い。」",
     flag: "isSmileCleared"
+  },
+  {
+    id: "purple",
+    name: "CHROMATIC ANOMALY",
+    module: "TOP-8",
+    flavor: "「紫—それは赤と青が交わる境界、現実と虚構が混ざり合う色。センサーが紫を検知した瞬間、スペクトルの秩序が乱れた。この色は本来この世界に存在してはならない。あなたは禁じられた波長を解き放った。」",
+    flag: "isColorPurpleCleared"
   }
 ];
 

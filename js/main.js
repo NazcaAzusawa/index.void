@@ -23,6 +23,7 @@ const gameState = {
   isLockUsed: false, // MID-6 LOCKを使用したか
   isTripleZeroCleared: false, // TOP5/MID5/BOT18が全て0で5秒
   isSmileCleared: false, // 笑顔検出クリア
+  isColorPurpleCleared: false, // 紫色検出クリア
 };
 
 // modules.jsにgameStateの参照を設定
@@ -385,10 +386,10 @@ const observer = new IntersectionObserver(
           }, 100);
         }
         
-        // BOT-8 (カラーカメラ) が表示されたらアウトカメラを起動
-        if (tier === "bot" && index === 8) {
+        // TOP-8 (カラーカメラ) が表示されたらアウトカメラを起動
+        if (tier === "top" && index === 8) {
           setTimeout(() => {
-            colorCamera.initBackCamera();
+            colorCamera.initBackCamera(gameState);
           }, 100);
         }
       } else {
@@ -409,8 +410,8 @@ const observer = new IntersectionObserver(
           faceCamera.stopFaceDetection();
         }
         
-        // BOT-8 が非表示になったらアウトカメラを停止
-        if (tier === "bot" && index === 8) {
+        // TOP-8 が非表示になったらアウトカメラを停止
+        if (tier === "top" && index === 8) {
           colorCamera.stopBackCamera();
         }
       }
