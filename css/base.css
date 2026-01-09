@@ -22,6 +22,17 @@ body {
   user-select: none;
   -webkit-user-select: none;
   touch-action: pan-x; /* 横スクロールのみ許可、拡大縮小禁止 */
+  -webkit-tap-highlight-color: transparent; /* タップ時のハイライトを無効化 */
+}
+
+/* ボタンやクリック可能要素のタップハイライトを無効化 */
+button,
+[data-action],
+.key-btn,
+.lock-btn {
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+  -webkit-touch-callout: none; /* iOSの長押しメニューを無効化 */
 }
 
 /* --- 2. LAYOUT (3段ラック) --- */

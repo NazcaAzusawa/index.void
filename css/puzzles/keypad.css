@@ -14,8 +14,8 @@
 }
 
 .keypad-display {
-  width: 70px;
-  height: 50px;
+  width: 80px;
+  height: 30px;
   padding: 5px;
   background: #000;
   border: 2px solid #333;
@@ -37,8 +37,8 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
-  width: 120px;
-  height: 150px;
+  width: 150px;
+  height: 180px;
   flex-shrink: 0;
 }
 
