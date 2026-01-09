@@ -50,6 +50,8 @@
   top: 0;
   left: 0;
   box-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  transition: transform 0.3s ease;
+  transform: translateY(0);
 }
 
 .lock-right {
