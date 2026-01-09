@@ -42,6 +42,10 @@ export function handleAction(action, config, tier, index, element, gameState, sh
             resultEl.innerText = "CURE COMPLETE";
             if (!gameState.isClipboardCleared) {
               gameState.isClipboardCleared = true;
+              // 効果音再生
+              const audio = new Audio("ac.wav");
+              audio.volume = 0.5;
+              audio.play().catch(err => console.log("Audio play failed:", err));
               console.log("Clipboard puzzle cleared!");
             }
           } else {

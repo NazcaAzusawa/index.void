@@ -25,6 +25,13 @@ const gameState = {
 // modules.jsにgameStateの参照を設定
 setGameStateRef(gameState);
 
+// 効果音の再生
+function playAchievementSound() {
+  const audio = new Audio("ac.wav");
+  audio.volume = 0.5;
+  audio.play().catch(err => console.log("Audio play failed:", err));
+}
+
 // --- UI UTILITIES (モーダル制御など) ---
 const modal = document.getElementById("sys-modal");
 const mTitle = document.getElementById("modal-title");
@@ -146,6 +153,7 @@ function initLane(laneId, tierName) {
         // LOCK使用フラグを立てる
         if (!gameState.isLockUsed) {
           gameState.isLockUsed = true;
+          playAchievementSound();
           console.log("Lock mechanism used!");
         }
         
@@ -257,6 +265,7 @@ function startGyro() {
         gameState.isGyroCleared = true;
         valSpan.innerText = "SYNC";
         valSpan.classList.add("synced");
+        playAchievementSound();
         console.log("Gyro puzzle cleared!");
       }
     } else {
@@ -298,6 +307,7 @@ function checkCableConnection() {
       const elapsed = Date.now() - gameState.cableConnectedTime;
       if (elapsed >= 5000) {
         gameState.isCableCleared = true;
+        playAchievementSound();
         console.log("CABLE CLEARED (5s elapsed)");
       }
     }
@@ -437,6 +447,7 @@ setInterval(() => {
     const elapsed = Date.now() - tripleZeroStartTime;
     if (elapsed >= 5000 && !gameState.isTripleZeroCleared) {
       gameState.isTripleZeroCleared = true;
+      playAchievementSound();
       console.log("Triple zero cleared!");
     }
   } else {

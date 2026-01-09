@@ -21,6 +21,10 @@ export function handleAction(action, config, tier, index, element, gameState, sh
     if (val === "MIMIC") {
       // 正解処理
       gameState.isMimicCleared = true;
+      // 効果音再生
+      const audio = new Audio("ac.wav");
+      audio.volume = 0.5;
+      audio.play().catch(err => console.log("Audio play failed:", err));
       showModal("SYSTEM", "ACCESS GRANTED.\n\nModule unlocked.");
       element.parentElement.innerHTML = `<div style="color:#3f3; font-weight:bold; font-size:24px;">ACCESS GRANTED</div>`;
       if (navigator.vibrate) {

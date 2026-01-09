@@ -130,26 +130,40 @@ export function updatePhysics(gameState) {
     lastWallX = targetX;
   }
   
-  // 画面外に出たボールをチェック
+  // モニターの実際のサイズを取得
+  const monitorRect = container.getBoundingClientRect();
+  const monitorWidth = monitorRect.width;
+  const monitorHeight = monitorRect.height;
+  
+  // 画面外に出たボールをチェック（厳密に、余裕5pxのみ）
   let remainingCount = 0;
+  let outCount = 0;
+  
   for (const ball of balls) {
     const pos = ball.position;
-    // 画面内にあるかチェック（画面の境界内のみ）
-    if (pos.x >= 0 && pos.x <= width && pos.y >= 0 && pos.y <= height) {
+    // モニター内にあるかチェック（余裕5pxのみ）
+    const margin = 5;
+    if (pos.x >= -margin && pos.x <= monitorWidth + margin && 
+        pos.y >= -margin && pos.y <= monitorHeight + margin) {
       remainingCount++;
+    } else {
+      outCount++;
     }
   }
   
-  // デバッグ用（残りのボール数を表示）
-  if (remainingCount !== 20 && remainingCount > 0) {
-    console.log(`Remaining balls in screen: ${remainingCount}/20`);
+  // デバッグ用（詳細な情報を表示）
+  if (remainingCount !== 20) {
+    console.log(`Balls - In screen: ${remainingCount}, Out: ${outCount}, Total: ${balls.length}, Monitor: ${monitorWidth}x${monitorHeight}`);
   }
   
-  // 全ボールが画面外に出たらクリア
-  if (remainingCount === 0 && balls.length > 0 && !gameState.isBallPuzzleCleared) {
+  // 全20個のボールが画面外に出たらクリア
+  if (remainingCount === 0 && balls.length === 20 && !gameState.isBallPuzzleCleared) {
     gameState.isBallPuzzleCleared = true;
-    console.log("🎉 BALL PUZZLE CLEARED! 🎉");
-    // クリア演出（必要なら）
+    // 効果音再生
+    const audio = new Audio("ac.wav");
+    audio.volume = 0.5;
+    audio.play().catch(err => console.log("Audio play failed:", err));
+    console.log("🎉 BALL PUZZLE CLEARED! All 20 balls are out! 🎉");
   }
 }
 
