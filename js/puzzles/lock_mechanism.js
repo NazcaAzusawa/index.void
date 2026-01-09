@@ -65,9 +65,11 @@ export function handleAction(action, config, tier, index, element, gameState, sh
     if (midLane) midLane.classList.add("locked");
     if (botLane) botLane.classList.add("locked");
     
-    // 3秒後にUNLOCKに戻す
-    setTimeout(() => {
-      gameState.isLocked = false; // グローバルロック状態をOFF
+    // UNLOCK関数をgameStateに保存（main.jsから呼び出せるように）
+    gameState.unlockMechanism = () => {
+      if (!gameState.isLocked) return;
+      
+      gameState.isLocked = false;
       
       statusEl.innerText = "UNLOCK";
       statusEl.style.color = "";
@@ -80,7 +82,10 @@ export function handleAction(action, config, tier, index, element, gameState, sh
       // レーンからロッククラスを削除
       if (midLane) midLane.classList.remove("locked");
       if (botLane) botLane.classList.remove("locked");
-    }, 3000);
+      
+      // 関数を削除
+      delete gameState.unlockMechanism;
+    };
     
     return true;
   }

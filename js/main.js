@@ -1,5 +1,7 @@
 import { MODULE_COUNT } from "./config.js";
 import { renderModule, handleAction, triggerMorseVibration, setGameStateRef } from "./modules.js";
+import * as ballMonitor from "./puzzles/ball_monitor.js";
+import * as rainbowScreen from "./puzzles/rainbow_screen.js";
 
 // --- STATE MANAGEMENT (脳) ---
 const gameState = {
@@ -11,6 +13,8 @@ const gameState = {
   cableConnectedTime: 0, // ケーブル接続開始時刻
   isCableCleared: false, // 5秒経過してクリアしたかどうか
   isLocked: false, // MID-6のロック状態
+  wallX: null, // BOT-6の壁のX座標（0-100のパーセンテージ）
+  isBallPuzzleCleared: false, // ボールパズルがクリアされたか
 };
 
 // modules.jsにgameStateの参照を設定
@@ -95,11 +99,13 @@ function initLane(laneId, tierName) {
     let touchStartX = 0;
     let scrollStartPos = 0;
     let isTouching = false;
+    let hasMoved = false;
     
     lane.addEventListener("touchstart", (e) => {
       if (!gameState.isLocked) return;
       
       isTouching = true;
+      hasMoved = false;
       touchStartX = e.touches[0].clientX;
       scrollStartPos = lane.scrollLeft;
     }, { passive: true });
@@ -107,6 +113,7 @@ function initLane(laneId, tierName) {
     lane.addEventListener("touchmove", (e) => {
       if (!gameState.isLocked || !isTouching) return;
       
+      hasMoved = true;
       const touchCurrentX = e.touches[0].clientX;
       const diffX = touchStartX - touchCurrentX;
       const newScrollPos = scrollStartPos + diffX;
@@ -125,25 +132,15 @@ function initLane(laneId, tierName) {
       
       isTouching = false;
       
-      // スナップ処理：最寄りのモジュールへ
-      setTimeout(() => {
-        const w = lane.querySelector(".module").offsetWidth;
-        const currentScroll = lane.scrollLeft;
-        const nearestIndex = Math.round(currentScroll / w);
-        const snapPosition = nearestIndex * w;
-        
-        // スナップまでの距離を計算
-        const distance = Math.abs(snapPosition - currentScroll);
-        
-        // 距離が小さい場合は即座に、大きい場合はアニメーション
-        if (distance < 5) {
-          lane.scrollLeft = snapPosition;
+      // スワイプが実際に行われた場合のみスナップとUNLOCK
+      if (hasMoved) {
+        // スナップ処理：最寄りのモジュールへ
+        setTimeout(() => {
+          const w = lane.querySelector(".module").offsetWidth;
+          const currentScroll = lane.scrollLeft;
+          const nearestIndex = Math.round(currentScroll / w);
+          const snapPosition = nearestIndex * w;
           
-          const botLane = document.getElementById("lane-bot");
-          if (botLane) {
-            botLane.scrollLeft = snapPosition;
-          }
-        } else {
           // スムーズにスナップ
           lane.scrollTo({
             left: snapPosition,
@@ -157,8 +154,15 @@ function initLane(laneId, tierName) {
               behavior: "smooth"
             });
           }
-        }
-      }, 50);
+          
+          // スナップ完了後にUNLOCK（アニメーション時間を考慮）
+          setTimeout(() => {
+            if (gameState.unlockMechanism) {
+              gameState.unlockMechanism();
+            }
+          }, 300);
+        }, 50);
+      }
     }, { passive: true });
   }
   
@@ -337,12 +341,31 @@ const observer = new IntersectionObserver(
         if (tier === "top" && index === 5) {
           startAudioMonitoring();
         }
+        
+        // TOP-6 (ボールモニター) が表示されたら物理演算を開始
+        if (tier === "top" && index === 6) {
+          setTimeout(() => {
+            ballMonitor.initPhysics();
+          }, 100);
+        }
+        
+        // BOT-6 (虹色タッチスクリーン) が表示されたらタッチコントロールを初期化
+        if (tier === "bot" && index === 6) {
+          setTimeout(() => {
+            rainbowScreen.initTouchControl(gameState);
+          }, 100);
+        }
       } else {
         // TOP-5 が非表示になったらマイク監視を停止
         const tier = entry.target.dataset.tier;
         const index = parseInt(entry.target.dataset.index);
         if (tier === "top" && index === 5) {
           stopAudioMonitoring();
+        }
+        
+        // TOP-6 が非表示になったら物理演算を停止
+        if (tier === "top" && index === 6) {
+          ballMonitor.stopPhysics();
         }
       }
     });
@@ -361,6 +384,13 @@ setTimeout(() => {
 setInterval(() => {
   checkCableConnection();
 }, 500);
+
+// ボール物理演算の更新（TOP-6が表示されている時のみ）
+setInterval(() => {
+  if (gameState.activeIndices.top === 6) {
+    ballMonitor.updatePhysics(gameState);
+  }
+}, 16); // 約60fps
 
 // トリプルタップ全画面
 let tapCnt = 0,

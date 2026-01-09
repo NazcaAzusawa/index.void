@@ -4,7 +4,6 @@
   width: 100%;
   height: 100%;
   position: relative;
-  /* 緑色基調のCRTモニター風 */
   background: linear-gradient(135deg, #001a00 0%, #000d00 100%);
   border: 4px solid #2a4a2a;
   border-radius: 4px;
@@ -12,7 +11,7 @@
   overflow: hidden;
 }
 
-/* CRT走査線エフェクト（緑） */
+/* CRT走査線エフェクト */
 .ball-monitor::before {
   content: "";
   position: absolute;
@@ -23,17 +22,15 @@
   background: linear-gradient(rgba(0, 255, 0, 0) 50%, rgba(0, 255, 0, 0.03) 50%);
   background-size: 100% 2px;
   pointer-events: none;
-  z-index: 1;
+  z-index: 10;
 }
 
-/* ボール */
-.ball {
+/* Matter.jsのキャンバス */
+#ball-canvas {
   position: absolute;
-  width: 8px;
-  height: 8px;
-  background: radial-gradient(circle at 30% 30%, #44ff44, #00aa00);
-  border-radius: 50%;
-  box-shadow: 0 0 6px #33ff33, 0 0 12px rgba(51, 255, 51, 0.5);
-  z-index: 2;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
