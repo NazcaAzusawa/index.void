@@ -23,9 +23,8 @@
 
 /* 検出された色のストリップ（一番左） */
 .detected-color {
-  background: #333;
+  background: transparent; /* 初期状態は透明（カメラを隠す） */
   transition: background 0.5s ease;
-  display: none; /* 初期状態は非表示（カメラを隠す） */
 }
 
 /* カラーストリップ */

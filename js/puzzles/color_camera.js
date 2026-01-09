@@ -191,13 +191,6 @@ export async function initBackCamera(gameState) {
       video.onloadedmetadata = () => {
         video.play().then(() => {
           isCameraReady = true; // カメラ準備完了
-          
-          // カメラ準備完了したら検出色のストライプを表示
-          const colorDiv = document.getElementById("detected-color");
-          if (colorDiv) {
-            colorDiv.style.display = "flex";
-          }
-          
           resolve();
         }).catch(reject);
       };
@@ -241,10 +234,10 @@ export function stopBackCamera() {
     video = null;
   }
   
-  // 色のストライプを非表示に戻す
+  // 色のストライプを透明に戻す
   const colorDiv = document.getElementById("detected-color");
   if (colorDiv) {
-    colorDiv.style.display = "none";
+    colorDiv.style.background = "transparent";
   }
   
   canvas = null;

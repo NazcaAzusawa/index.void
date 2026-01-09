@@ -56,6 +56,12 @@ button,
   -webkit-overflow-scrolling: auto; /* iOS慣性スクロールOFF */
 }
 
+/* BOT-6表示中：スクロール完全無効化 */
+.lane.no-scroll {
+  overflow-x: hidden !important;
+  touch-action: none !important;
+}
+
 /* --- 3. MODULE DESIGN (金属プレート) --- */
 .module {
   flex: 0 0 100vw;

@@ -23,7 +23,7 @@ export function handleAction(action, config, tier, index, element, gameState, sh
 }
 
 // ボールをランダム配置にリセット
-function resetBalls(width, height) {
+export function resetBalls(width, height) {
   if (!window.Matter || !balls.length) return;
   
   const { Body } = window.Matter;
@@ -43,8 +43,8 @@ let isInitialized = false; // 一度だけ初期化するフラグ
 
 // Matter.jsの初期化（グローバルから呼び出す）
 export function initPhysics() {
-  if (!window.Matter) return;
-  if (isInitialized) return; // 既に初期化済みなら何もしない
+  if (!window.Matter) return false;
+  if (isInitialized) return false; // 既に初期化済みならfalseを返す
   isInitialized = true;
   
   const container = document.getElementById("ball-monitor-top-6");
@@ -133,6 +133,7 @@ export function initPhysics() {
   
   isPhysicsRunning = true;
   console.log("Matter.js physics initialized for ball monitor");
+  return true; // 初期化成功
 }
 
 let lastWallX = null;

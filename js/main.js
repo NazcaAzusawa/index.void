@@ -195,6 +195,29 @@ function initLane(laneId, tierName) {
   
   // BOT-6でスワイプを完全に無効化
   if (tierName === "bot") {
+    let bot6FixedPosition = null;
+    
+    // scrollイベントでスクロール位置を固定
+    lane.addEventListener("scroll", () => {
+      // ロック中は通常のスクロールを許可
+      if (gameState.isLocked) return;
+      
+      // BOT-6が表示されているときは完全にスクロール無効化
+      if (gameState.activeIndices.bot === 6) {
+        if (bot6FixedPosition === null) {
+          const module6 = lane.querySelector(`.module[data-index="6"]`);
+          if (module6) {
+            bot6FixedPosition = module6.offsetLeft;
+          }
+        }
+        if (bot6FixedPosition !== null) {
+          lane.scrollLeft = bot6FixedPosition;
+        }
+      } else {
+        bot6FixedPosition = null;
+      }
+    }, { passive: true });
+    
     lane.addEventListener("touchstart", (e) => {
       // ロック中は通常のスワイプを許可
       if (gameState.isLocked) return;
@@ -207,6 +230,17 @@ function initLane(laneId, tierName) {
     }, { passive: false });
     
     lane.addEventListener("touchmove", (e) => {
+      // ロック中は通常のスワイプを許可
+      if (gameState.isLocked) return;
+      
+      // BOT-6が表示されているときは完全にスワイプ無効化
+      if (gameState.activeIndices.bot === 6) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, { passive: false });
+    
+    lane.addEventListener("touchend", (e) => {
       // ロック中は通常のスワイプを許可
       if (gameState.isLocked) return;
       
@@ -367,13 +401,30 @@ const observer = new IntersectionObserver(
         // TOP-6 (ボールモニター) が表示されたら物理演算を開始/再開
         if (tier === "top" && index === 6) {
           setTimeout(() => {
-            ballMonitor.initPhysics(); // 初回のみ初期化
+            const wasInitialized = ballMonitor.initPhysics(); // 初回のみ初期化
+            
+            // 既に初期化済みで、クリアされていない場合はボールをリセット
+            if (wasInitialized === false && !gameState.isBallPuzzleCleared) {
+              const container = document.getElementById("ball-monitor-top-6");
+              if (container) {
+                const width = container.offsetWidth;
+                const height = container.offsetHeight;
+                ballMonitor.resetBalls(width, height);
+              }
+            }
+            
             ballMonitor.resumePhysics(); // 2回目以降は再開
           }, 100);
         }
         
         // BOT-6 (虹色タッチスクリーン) が表示されたらタッチコントロールを初期化
         if (tier === "bot" && index === 6) {
+          // BOTレーンにno-scrollクラスを追加
+          const botLane = document.getElementById("lane-bot");
+          if (botLane) {
+            botLane.classList.add("no-scroll");
+          }
+          
           setTimeout(() => {
             rainbowScreen.initTouchControl(gameState);
           }, 100);
@@ -413,6 +464,14 @@ const observer = new IntersectionObserver(
         // TOP-8 が非表示になったらアウトカメラを停止
         if (tier === "top" && index === 8) {
           colorCamera.stopBackCamera();
+        }
+        
+        // BOT-6 が非表示になったらno-scrollクラスを削除
+        if (tier === "bot" && index === 6) {
+          const botLane = document.getElementById("lane-bot");
+          if (botLane) {
+            botLane.classList.remove("no-scroll");
+          }
         }
       }
     });
