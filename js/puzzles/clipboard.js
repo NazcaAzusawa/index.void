@@ -40,10 +40,13 @@ export function handleAction(action, config, tier, index, element, gameState, sh
           if (text && text.trim() === "PASS") {
             resultEl.style.color = "#3f3";
             resultEl.innerText = "CURE COMPLETE";
+            if (!gameState.isClipboardCleared) {
+              gameState.isClipboardCleared = true;
+              console.log("Clipboard puzzle cleared!");
+            }
           } else {
             resultEl.style.color = "#f00";
             resultEl.innerText = "INVALID DATA";
-            // 振動なし（MIMICパズル専用）
           }
         })
         .catch((err) => {

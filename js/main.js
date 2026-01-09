@@ -2,6 +2,7 @@ import { MODULE_COUNT } from "./config.js";
 import { renderModule, handleAction, triggerMorseVibration, setGameStateRef } from "./modules.js";
 import * as ballMonitor from "./puzzles/ball_monitor.js";
 import * as rainbowScreen from "./puzzles/rainbow_screen.js";
+import { openAchievements } from "./achievements.js";
 
 // --- STATE MANAGEMENT (脳) ---
 const gameState = {
@@ -15,6 +16,10 @@ const gameState = {
   isLocked: false, // MID-6のロック状態
   wallX: null, // BOT-6の壁のX座標（0-100のパーセンテージ）
   isBallPuzzleCleared: false, // ボールパズルがクリアされたか
+  isGyroCleared: false, // ジャイロ135度5秒維持クリア
+  isClipboardCleared: false, // クリップボードPASS入力クリア
+  isLockUsed: false, // MID-6 LOCKを使用したか
+  isTripleZeroCleared: false, // TOP5/MID5/BOT18が全て0で5秒
 };
 
 // modules.jsにgameStateの参照を設定
@@ -26,6 +31,12 @@ const mTitle = document.getElementById("modal-title");
 const mBody = document.getElementById("modal-body");
 
 function showModal(title, text) {
+  // RECORDSの場合は実績ウィンドウを開く
+  if (title === "RECORDS") {
+    openAchievements(gameState);
+    return;
+  }
+  
   mTitle.innerText = title;
   mBody.innerText = text;
   modal.classList.add("show");
@@ -132,6 +143,12 @@ function initLane(laneId, tierName) {
       
       // スワイプが実際に行われた場合のみスナップとUNLOCK
       if (hasMoved) {
+        // LOCK使用フラグを立てる
+        if (!gameState.isLockUsed) {
+          gameState.isLockUsed = true;
+          console.log("Lock mechanism used!");
+        }
+        
         // スナップ処理：最寄りのモジュールへ
         setTimeout(() => {
           const w = lane.querySelector(".module").offsetWidth;
@@ -236,11 +253,11 @@ function startGyro() {
       if (holdStartTime === 0) holdStartTime = Date.now();
       const elapsed = Date.now() - holdStartTime;
 
-      if (elapsed >= 5000) {
-        // クリア演出
+      if (elapsed >= 5000 && !gameState.isGyroCleared) {
+        gameState.isGyroCleared = true;
         valSpan.innerText = "SYNC";
         valSpan.classList.add("synced");
-        // 実績解除処理...
+        console.log("Gyro puzzle cleared!");
       }
     } else {
       holdStartTime = 0;
@@ -388,6 +405,44 @@ setInterval(() => {
     ballMonitor.updatePhysics(gameState);
   }
 }, 16); // 約60fps
+
+// トリプルゼロ判定（TOP-5、MID-5、BOT-18が全て整数部分0で5秒）
+let tripleZeroStartTime = 0;
+
+setInterval(() => {
+  // 各値を取得
+  const audioLevelEl = document.getElementById("audio-level-val");
+  const tapDistanceEl = document.getElementById("tap-distance-val");
+  const betaValEl = document.getElementById("beta-val");
+  
+  if (!audioLevelEl || !tapDistanceEl || !betaValEl) {
+    tripleZeroStartTime = 0;
+    return;
+  }
+  
+  const audioLevel = parseFloat(audioLevelEl.innerText) || 0;
+  const tapDistance = parseFloat(tapDistanceEl.innerText) || 0;
+  const betaVal = parseFloat(betaValEl.innerText) || 0;
+  
+  // 全て整数部分が0（0.0〜0.9の範囲）かチェック
+  const isAudioZero = audioLevel >= 0 && audioLevel < 1;
+  const isTapZero = tapDistance >= 0 && tapDistance < 1;
+  const isBetaZero = betaVal >= 0 && betaVal < 1;
+  
+  if (isAudioZero && isTapZero && isBetaZero) {
+    if (tripleZeroStartTime === 0) {
+      tripleZeroStartTime = Date.now();
+    }
+    
+    const elapsed = Date.now() - tripleZeroStartTime;
+    if (elapsed >= 5000 && !gameState.isTripleZeroCleared) {
+      gameState.isTripleZeroCleared = true;
+      console.log("Triple zero cleared!");
+    }
+  } else {
+    tripleZeroStartTime = 0;
+  }
+}, 100);
 
 // トリプルタップ全画面
 let tapCnt = 0,

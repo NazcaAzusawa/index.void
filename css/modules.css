@@ -11,3 +11,4 @@
 @import url("puzzles/ball_monitor.css");  /* ボールモニター */
 @import url("puzzles/lock_mechanism.css"); /* ロック機構 */
 @import url("puzzles/rainbow_screen.css"); /* 虹色タッチスクリーン */
+@import url("achievements.css"); /* 実績システム */

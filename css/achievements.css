@@ -1,0 +1,294 @@
+/* --- 実績システム --- */
+
+.achievement-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.achievement-modal.show {
+  display: flex;
+}
+
+.achievement-window {
+  width: 90%;
+  max-width: 600px;
+  height: 80vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 100%);
+  border: 3px solid #ff3333;
+  border-radius: 8px;
+  box-shadow: 0 0 50px rgba(255, 51, 51, 0.5), inset 0 0 30px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.achievement-header {
+  padding: 15px 20px;
+  background: linear-gradient(to bottom, #330000, #1a0000);
+  border-bottom: 2px solid #ff3333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.achievement-title {
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ff3333;
+  text-shadow: 0 0 10px #ff3333;
+  letter-spacing: 3px;
+}
+
+.achievement-close {
+  width: 30px;
+  height: 30px;
+  background: #ff3333;
+  border: none;
+  border-radius: 50%;
+  color: #000;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 51, 51, 0.8);
+  transition: all 0.2s;
+}
+
+.achievement-close:hover {
+  background: #ff6666;
+  transform: scale(1.1);
+}
+
+.achievement-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #ff3333 #0a0a0a;
+}
+
+.achievement-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.achievement-list::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.achievement-list::-webkit-scrollbar-thumb {
+  background: #ff3333;
+  border-radius: 4px;
+}
+
+/* 実績アイテム */
+.achievement-item {
+  position: relative;
+  height: 100px;
+  margin-bottom: 15px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+  border: 2px solid #333;
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  grid-template-rows: 1fr auto;
+  padding: 10px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+  transition: all 0.3s;
+}
+
+.achievement-item.unlocked {
+  border-color: #ff3333;
+  background: linear-gradient(135deg, #2a0a0a 0%, #1a0000 100%);
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 51, 51, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.achievement-item.unlocked:hover {
+  border-color: #ff6666;
+  box-shadow: 0 0 30px rgba(255, 51, 51, 0.6), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  transform: translateY(-2px);
+}
+
+.achievement-item.locked {
+  border-color: #0066ff;
+  background: linear-gradient(135deg, #0a1a2a 0%, #000a1a 100%);
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+/* アイコン（左上） */
+.achievement-icon {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: grayscale(0);
+}
+
+.achievement-item.unlocked .achievement-icon {
+  filter: grayscale(100%) brightness(0.6) sepia(100%) hue-rotate(-50deg) saturate(600%);
+  animation: destruction 2s ease-out;
+}
+
+.achievement-item.locked .achievement-icon {
+  filter: brightness(1.2) saturate(150%);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+/* ステータス（左下） */
+.achievement-status {
+  grid-column: 1;
+  grid-row: 2;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 1px;
+  padding: 3px;
+}
+
+.achievement-item.unlocked .achievement-status {
+  color: #ff3333;
+  text-shadow: 0 0 5px #ff3333;
+}
+
+.achievement-item.locked .achievement-status {
+  color: #0066ff;
+  text-shadow: 0 0 5px #0066ff;
+}
+
+/* 実績名（右側全体） */
+.achievement-name {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  font-family: 'Courier New', monospace;
+  font-size: 22px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+  letter-spacing: 2px;
+  line-height: 1.2;
+}
+
+.achievement-item.unlocked .achievement-name {
+  color: #ff6666;
+  text-shadow: 0 0 10px rgba(255, 51, 51, 0.6);
+}
+
+.achievement-item.locked .achievement-name {
+  color: #3388ff;
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.6);
+}
+
+/* アニメーション */
+@keyframes destruction {
+  0% {
+    filter: grayscale(0) brightness(1) sepia(0) hue-rotate(0deg) saturate(100%);
+  }
+  50% {
+    filter: grayscale(50%) brightness(1.5) sepia(50%) hue-rotate(-25deg) saturate(300%);
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    filter: grayscale(100%) brightness(0.6) sepia(100%) hue-rotate(-50deg) saturate(600%);
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    filter: brightness(1.2) saturate(150%);
+  }
+  50% {
+    filter: brightness(1.4) saturate(200%);
+  }
+}
+
+/* --- 詳細モーダル --- */
+.achievement-detail-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+}
+
+.achievement-detail-modal.show {
+  display: flex;
+}
+
+.achievement-detail-window {
+  width: 85%;
+  max-width: 500px;
+  background: linear-gradient(135deg, #2a0a0a 0%, #1a0000 100%);
+  border: 3px solid #ff6666;
+  border-radius: 8px;
+  box-shadow: 0 0 60px rgba(255, 51, 51, 0.8);
+  overflow: hidden;
+}
+
+.achievement-detail-header {
+  padding: 15px 20px;
+  background: linear-gradient(to bottom, #440000, #220000);
+  border-bottom: 2px solid #ff6666;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.achievement-detail-header span {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: bold;
+  color: #ff6666;
+  text-shadow: 0 0 10px #ff6666;
+  letter-spacing: 2px;
+}
+
+.achievement-detail-body {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.detail-icon {
+  font-size: 80px;
+  filter: grayscale(100%) brightness(0.6) sepia(100%) hue-rotate(-50deg) saturate(600%);
+}
+
+.detail-desc {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #ccc;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.detail-status {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ff3333;
+  text-shadow: 0 0 10px #ff3333;
+  margin-top: 10px;
+  padding: 10px 20px;
+  border: 2px solid #ff3333;
+  border-radius: 4px;
+}
