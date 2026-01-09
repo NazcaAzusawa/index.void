@@ -248,7 +248,7 @@ setInterval(() => {
 // トリプルタップ全画面
 let tapCnt = 0,
   lastTap = 0;
-document.addEventListener("touchend", () => {
+document.addEventListener("touchend", (e) => {
   const now = new Date().getTime();
   if (now - lastTap < 400) {
     tapCnt++;
@@ -258,4 +258,91 @@ document.addEventListener("touchend", () => {
     }
   } else tapCnt = 1;
   lastTap = now;
+  
+  // タップ距離の計算
+  updateTapDistance(e);
 });
+
+// タップ距離計算（画面中心からの距離）
+function updateTapDistance(e) {
+  const tapDistanceVal = document.getElementById("tap-distance-val");
+  if (!tapDistanceVal) return;
+  
+  // タップ位置を取得
+  const touch = e.changedTouches ? e.changedTouches[0] : e;
+  const x = touch.clientX;
+  const y = touch.clientY;
+  
+  // 画面中心を計算
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+  
+  // 中心からの距離（|x| + |y|）
+  const distanceX = Math.abs(x - centerX);
+  const distanceY = Math.abs(y - centerY);
+  const totalDistance = distanceX + distanceY;
+  
+  // 表示（小数点1桁）
+  tapDistanceVal.innerText = totalDistance.toFixed(1);
+}
+
+// クリックイベントにも対応（PC用）
+document.addEventListener("click", updateTapDistance);
+
+// --- AUDIO LEVEL MONITORING (マイク入力) ---
+let audioContext = null;
+let analyser = null;
+let microphone = null;
+let dataArray = null;
+
+async function startAudioMonitoring() {
+  try {
+    // マイク許可を取得
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    // Web Audio API のセットアップ
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    microphone = audioContext.createMediaStreamSource(stream);
+    
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+    
+    microphone.connect(analyser);
+    
+    // 定期的に音量レベルを更新
+    setInterval(() => {
+      const audioLevelVal = document.getElementById("audio-level-val");
+      if (!audioLevelVal) return;
+      
+      analyser.getByteFrequencyData(dataArray);
+      
+      // 平均音量を計算
+      let sum = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        sum += dataArray[i];
+      }
+      const average = sum / bufferLength;
+      
+      // 0-255を0-100にマッピング
+      const level = (average / 255) * 100;
+      
+      // 表示（小数点1桁）
+      audioLevelVal.innerText = level.toFixed(1);
+    }, 100);
+    
+    console.log("Audio monitoring started");
+  } catch (err) {
+    console.error("Audio monitoring failed:", err);
+    const audioLevelVal = document.getElementById("audio-level-val");
+    if (audioLevelVal) {
+      audioLevelVal.innerText = "ERR";
+    }
+  }
+}
+
+// 自動でマイク監視を開始
+setTimeout(() => {
+  startAudioMonitoring();
+}, 1000);

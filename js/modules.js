@@ -9,6 +9,9 @@ import * as rawDataPuzzle from "./puzzles/raw_data.js";   // ジャイロ生デ�
 import * as cipherTextPuzzle from "./puzzles/cipher_text.js"; // 暗号テキスト（金属パネル）
 import * as cableSocketPuzzle from "./puzzles/cable_socket.js"; // ケーブルソケット
 import * as monitorPuzzle from "./puzzles/monitor.js"; // モニター
+import * as keypadPuzzle from "./puzzles/keypad.js"; // テンキー
+import * as tapDistancePuzzle from "./puzzles/tap_distance.js"; // タップ距離モニター
+import * as audioLevelPuzzle from "./puzzles/audio_level.js"; // 音声レベルモニター
 
 // ゲーム状態を外部から受け取るための参照
 export let gameStateRef = null;
@@ -31,6 +34,11 @@ const puzzleMap = {
   // 分離: ケーブルソケットとモニター
   cable_socket: cableSocketPuzzle, // T:3, M:8, B:15: ケーブル断面
   monitor: monitorPuzzle,          // M:13: ケーブル接続監視モニター
+  
+  // 新規追加モジュール
+  keypad: keypadPuzzle,           // テンキー
+  tap_distance: tapDistancePuzzle, // タップ距離モニター
+  audio_level: audioLevelPuzzle,   // 音声レベルモニター
 };
 
 // モジュールのHTML生成関数
