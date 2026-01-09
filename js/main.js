@@ -10,6 +10,7 @@ const gameState = {
   isCablePowered: false, // ケーブルが繋がったかどうかのフラグ
   cableConnectedTime: 0, // ケーブル接続開始時刻
   isCableCleared: false, // 5秒経過してクリアしたかどうか
+  isLocked: false, // MID-6のロック状態
 };
 
 // modules.jsにgameStateの参照を設定
@@ -77,6 +78,7 @@ function initLane(laneId, tierName) {
   }, 10);
 
   // 無限スクロール処理 (ワープ)
+  let scrollTimeout = null;
   lane.addEventListener("scroll", () => {
     const w = lane.querySelector(".module").offsetWidth;
     const maxScroll = w * (MODULE_COUNT + 1);
@@ -86,6 +88,40 @@ function initLane(laneId, tierName) {
       lane.scrollLeft = w * MODULE_COUNT + 1;
     } else if (lane.scrollLeft >= maxScroll - 1) {
       lane.scrollLeft = w - 1;
+    }
+    
+    // LOCK中で中段をスクロールした場合、下段も同期
+    if (gameState.isLocked && tierName === "mid") {
+      const botLane = document.getElementById("lane-bot");
+      if (botLane) {
+        botLane.scrollLeft = lane.scrollLeft;
+      }
+    }
+    
+    // LOCK中はスナップスクロール（慣性が終わったら最寄りのモジュールにスナップ）
+    if (gameState.isLocked && (tierName === "mid" || tierName === "bot")) {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const currentScroll = lane.scrollLeft;
+        const nearestIndex = Math.round(currentScroll / w);
+        const snapPosition = nearestIndex * w;
+        
+        lane.scrollTo({
+          left: snapPosition,
+          behavior: "smooth"
+        });
+        
+        // 下段も同期
+        if (tierName === "mid") {
+          const botLane = document.getElementById("lane-bot");
+          if (botLane) {
+            botLane.scrollTo({
+              left: snapPosition,
+              behavior: "smooth"
+            });
+          }
+        }
+      }, 50);
     }
   });
 

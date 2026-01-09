@@ -48,6 +48,8 @@ export function handleAction(action, config, tier, index, element, gameState, sh
     }
     
     // BOT-6の場合、ロック動作を実行
+    gameState.isLocked = true; // グローバルロック状態をON
+    
     statusEl.innerText = "LOCK";
     statusEl.style.color = "#ff9900";
     statusEl.style.textShadow = "0 0 4px #ff9900";
@@ -57,8 +59,16 @@ export function handleAction(action, config, tier, index, element, gameState, sh
     btnEl.style.opacity = "0.5";
     btnEl.style.cursor = "not-allowed";
     
+    // レーンにロッククラスを追加（慣性スクロールOFF、スナップON）
+    const midLane = document.getElementById("lane-mid");
+    const botLane = document.getElementById("lane-bot");
+    if (midLane) midLane.classList.add("locked");
+    if (botLane) botLane.classList.add("locked");
+    
     // 3秒後にUNLOCKに戻す
     setTimeout(() => {
+      gameState.isLocked = false; // グローバルロック状態をOFF
+      
       statusEl.innerText = "UNLOCK";
       statusEl.style.color = "";
       statusEl.style.textShadow = "";
@@ -66,6 +76,10 @@ export function handleAction(action, config, tier, index, element, gameState, sh
       btnEl.disabled = false;
       btnEl.style.opacity = "";
       btnEl.style.cursor = "";
+      
+      // レーンからロッククラスを削除
+      if (midLane) midLane.classList.remove("locked");
+      if (botLane) botLane.classList.remove("locked");
     }, 3000);
     
     return true;
