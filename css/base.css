@@ -38,6 +38,13 @@ body {
   display: none; /* Chrome/Safari */
 }
 
+/* LOCK中のレーン：慣性スクロールをOFF、即座にスナップ */
+.lane.locked {
+  scroll-snap-type: x mandatory;
+  scroll-behavior: auto; /* smoothを無効化 */
+  -webkit-overflow-scrolling: auto; /* iOS慣性スクロールOFF */
+}
+
 /* --- 3. MODULE DESIGN (金属プレート) --- */
 .module {
   flex: 0 0 100vw;

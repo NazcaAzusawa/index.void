@@ -78,7 +78,6 @@ function initLane(laneId, tierName) {
   }, 10);
 
   // 無限スクロール処理 (ワープ)
-  let scrollTimeout = null;
   lane.addEventListener("scroll", () => {
     const w = lane.querySelector(".module").offsetWidth;
     const maxScroll = w * (MODULE_COUNT + 1);
@@ -89,30 +88,68 @@ function initLane(laneId, tierName) {
     } else if (lane.scrollLeft >= maxScroll - 1) {
       lane.scrollLeft = w - 1;
     }
+  });
+  
+  // LOCK中の同期スクロール（中段のみ）
+  if (tierName === "mid") {
+    let touchStartX = 0;
+    let scrollStartPos = 0;
+    let isTouching = false;
     
-    // LOCK中で中段をスクロールした場合、下段も同期
-    if (gameState.isLocked && tierName === "mid") {
+    lane.addEventListener("touchstart", (e) => {
+      if (!gameState.isLocked) return;
+      
+      isTouching = true;
+      touchStartX = e.touches[0].clientX;
+      scrollStartPos = lane.scrollLeft;
+    }, { passive: true });
+    
+    lane.addEventListener("touchmove", (e) => {
+      if (!gameState.isLocked || !isTouching) return;
+      
+      const touchCurrentX = e.touches[0].clientX;
+      const diffX = touchStartX - touchCurrentX;
+      const newScrollPos = scrollStartPos + diffX;
+      
+      // 中段と下段を同期してスクロール
+      lane.scrollLeft = newScrollPos;
+      
       const botLane = document.getElementById("lane-bot");
       if (botLane) {
-        botLane.scrollLeft = lane.scrollLeft;
+        botLane.scrollLeft = newScrollPos;
       }
-    }
+    }, { passive: true });
     
-    // LOCK中はスナップスクロール（慣性が終わったら最寄りのモジュールにスナップ）
-    if (gameState.isLocked && (tierName === "mid" || tierName === "bot")) {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
+    lane.addEventListener("touchend", () => {
+      if (!gameState.isLocked || !isTouching) return;
+      
+      isTouching = false;
+      
+      // スナップ処理：最寄りのモジュールへ
+      setTimeout(() => {
+        const w = lane.querySelector(".module").offsetWidth;
         const currentScroll = lane.scrollLeft;
         const nearestIndex = Math.round(currentScroll / w);
         const snapPosition = nearestIndex * w;
         
-        lane.scrollTo({
-          left: snapPosition,
-          behavior: "smooth"
-        });
+        // スナップまでの距離を計算
+        const distance = Math.abs(snapPosition - currentScroll);
         
-        // 下段も同期
-        if (tierName === "mid") {
+        // 距離が小さい場合は即座に、大きい場合はアニメーション
+        if (distance < 5) {
+          lane.scrollLeft = snapPosition;
+          
+          const botLane = document.getElementById("lane-bot");
+          if (botLane) {
+            botLane.scrollLeft = snapPosition;
+          }
+        } else {
+          // スムーズにスナップ
+          lane.scrollTo({
+            left: snapPosition,
+            behavior: "smooth"
+          });
+          
           const botLane = document.getElementById("lane-bot");
           if (botLane) {
             botLane.scrollTo({
@@ -122,8 +159,40 @@ function initLane(laneId, tierName) {
           }
         }
       }, 50);
-    }
-  });
+    }, { passive: true });
+  }
+  
+  // BOT-6でタッチイベントを吸収してスワイプを無効化
+  if (tierName === "bot") {
+    lane.addEventListener("touchstart", (e) => {
+      // ロック中は通常のスワイプを許可
+      if (gameState.isLocked) return;
+      
+      // BOT-6が表示されているかチェック
+      if (gameState.activeIndices.bot === 6) {
+        // BOT-6のrainbow-screen要素をタッチしている場合のみ無効化
+        const target = e.target.closest(".rainbow-screen");
+        if (target) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
+    }, { passive: false });
+    
+    lane.addEventListener("touchmove", (e) => {
+      // ロック中は通常のスワイプを許可
+      if (gameState.isLocked) return;
+      
+      // BOT-6が表示されているかチェック
+      if (gameState.activeIndices.bot === 6) {
+        const target = e.target.closest(".rainbow-screen");
+        if (target) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
+    }, { passive: false });
+  }
 
   // ★ イベント委譲 (Event Delegation)
   // レーン全体でクリックを監視し、ボタンの種類に応じて処理を振り分ける

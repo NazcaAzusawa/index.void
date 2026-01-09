@@ -20,6 +20,7 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  touch-action: none; /* タッチイベントを完全に制御 */
 }
 
 /* ガラス質感 */
