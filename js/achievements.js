@@ -11,6 +11,13 @@ export const ACHIEVEMENTS = [
     flag: "isMimicCleared"
   },
   {
+    id: "brown",
+    name: "CHROMATIC MEMORY",
+    module: "TOP-2",
+    flavor: "「茶色—それは赤と緑が混ざり合った色であり、記憶の色でもある。あなたは『BROWN』という言葉を入力し、システムの深層に隠された記憶の断片に触れた。この色は何を意味するのか？過去の痕跡か、それとも未来への警告か。」",
+    flag: "isBrownCleared"
+  },
+  {
     id: "cable",
     name: "NEURAL LINK",
     module: "TOP-3, MID-8, BOT-15, MID-13",

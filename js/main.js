@@ -13,6 +13,7 @@ const gameState = {
   activeIndices: { top: 0, mid: 0, bot: 0 },
   mimicAttempt: 0, // MIMICパズルの失敗回数カウント
   isMimicCleared: false,
+  isBrownCleared: false, // BROWNパズルクリア
   horizonTimer: 0, // ジャイロの静止時間計測用
   isCablePowered: false, // ケーブルが繋がったかどうかのフラグ
   cableConnectedTime: 0, // ケーブル接続開始時刻

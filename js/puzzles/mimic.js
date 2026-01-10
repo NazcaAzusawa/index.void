@@ -1,9 +1,6 @@
 // MIMICパズル（振動モジュール）
 
 export function render(config, gameStateRef) {
-  if (gameStateRef && gameStateRef.isMimicCleared) {
-    return `<div style="color:#3f3; font-weight:bold; font-size:24px;">ACCESS GRANTED</div>`;
-  }
   return `
     <div class="screen-frame">
       <input type="text" class="retro-input" placeholder="_____" maxlength="5"
@@ -25,11 +22,19 @@ export function handleAction(action, config, tier, index, element, gameState, sh
       const audio = new Audio("ac.wav");
       audio.volume = 0.5;
       audio.play().catch(err => console.log("Audio play failed:", err));
-      showModal("SYSTEM", "ACCESS GRANTED.\n\nModule unlocked.");
-      element.parentElement.innerHTML = `<div style="color:#3f3; font-weight:bold; font-size:24px;">ACCESS GRANTED</div>`;
-      if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]); // 成功バイブ
-      }
+      // 入力欄をクリアして次の入力を受け付ける
+      input.value = "";
+      input.placeholder = "_____";
+    } else if (val === "BROWN") {
+      // BROWN正解処理（別の実績）
+      gameState.isBrownCleared = true;
+      // 効果音再生
+      const audio = new Audio("ac.wav");
+      audio.volume = 0.5;
+      audio.play().catch(err => console.log("Audio play failed:", err));
+      // 入力欄をクリアして次の入力を受け付ける
+      input.value = "";
+      input.placeholder = "_____";
     } else {
       // 不正解処理 (バイブレーション)
       triggerMorseVibration();

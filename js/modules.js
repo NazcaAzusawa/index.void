@@ -20,6 +20,7 @@ import * as unhappyPanelPuzzle from "./puzzles/unhappy_panel.js"; // UNHAPPYパ�
 import * as colorCameraPuzzle from "./puzzles/color_camera.js"; // カラーボーダー＋カメラ
 import * as mazePuzzle from "./puzzles/maze.js"; // 傾き迷路パズル
 import * as timeSyncPuzzle from "./puzzles/time_sync.js"; // 時刻同期パズル
+import * as gridCipherPuzzle from "./puzzles/grid_cipher.js"; // グリッド暗号パネル
 
 // ゲーム状態を外部から受け取るための参照
 export let gameStateRef = null;
@@ -65,6 +66,9 @@ const puzzleMap = {
   
   // 時刻同期パズル
   time_sync: timeSyncPuzzle,           // 時刻同期パズル
+  
+  // グリッド暗号パネル
+  grid_cipher: gridCipherPuzzle,       // 7×13グリッド暗号
 };
 
 // モジュールのHTML生成関数

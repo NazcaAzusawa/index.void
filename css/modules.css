@@ -16,5 +16,6 @@
 @import url("puzzles/color_camera.css");  /* カラーボーダー＋カメラ */
 @import url("puzzles/maze.css");          /* 傾き迷路パズル */
 @import url("puzzles/time_sync.css");     /* 時刻同期パズル */
+@import url("puzzles/grid_cipher.css");   /* グリッド暗号パネル */
 @import url("achievements.css"); /* 実績システム */
 @import url("permissions.css"); /* 権限管理システム */
